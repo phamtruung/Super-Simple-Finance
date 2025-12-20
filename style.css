@@ -70,6 +70,7 @@ select {
     color: var(--fg);
     border-radius: var(--radius);
     flex: 1;
+    height: 100%;
 }
 input:hover,
 input:focus,
@@ -132,4 +133,6 @@ select, input[type="number"] {
 .fix {
     flex: 1;
     display: flex;
+    align-items: center;
 }
+
