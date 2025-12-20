@@ -73,6 +73,7 @@ function getDateTime() {
     const second = rawDate.getSeconds();
     const stringDateTime = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
     return stringDateTime
+}
 
 //#region Account
 function addAccount() {
@@ -468,9 +469,7 @@ function renderSectionCategories() {
 
     const numberSumUse = document.getElementById('categories-sum-use');
     let sumUse = 0;
-    data.categoriesList
-        .sort((a, b) => b.type.localeCompare(a.type))
-        .forEach(category => {
+    data.categoriesList.forEach(category => {
             if (category.type === 'Income') {
                 sumUse += calcCategoryUse(category, yearMonth.value);
             }
@@ -569,6 +568,31 @@ function importJson() {
     })
 }
 
+//#region Navigation
+function navigation() {
+    const buttons = document.querySelectorAll('#navigation .btn');
+    const sections = document.querySelectorAll('section');
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // bỏ active khỏi tất cả nút
+        buttons.forEach(b => b.classList.remove('active'));
+        // thêm active cho nút vừa nhấn
+        btn.classList.add('active');
+
+        // ẩn tất cả section
+        sections.forEach(sec => sec.classList.remove('active'));
+        // hiện section tương ứng
+        const targetId = btn.getAttribute('data-target');
+        document.getElementById(targetId).classList.add('active');
+      });
+    });
+
+    // chọn mặc định nút 3 và section 3
+    buttons[1].classList.add('active');
+    sections[2].classList.add('active');
+}
+
 //#region Chart
 function createBar(x, height, color) {
     const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -616,7 +640,6 @@ window.addEventListener("DOMContentLoaded", async () => {
         data = loaded; // gán lại dữ liệu từ IndexedDB
     }
     renderPage();
+    navigation();
 });
-
-
 
