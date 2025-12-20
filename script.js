@@ -408,10 +408,6 @@ function renderCategory(category, yearMonth) {
     const inputName = createInputName(category);
     wrap.appendChild(inputName);
 
-    const labelBudget = document.createElement('label');
-    labelBudget.textContent = ':';
-    wrap.append(labelBudget);
-
     const inputValue = createInputValue(category);
     wrap.appendChild(inputValue);
 
@@ -493,20 +489,12 @@ function renderTransaction(transaction) {
     const selectFrom = createSelectFromId(transaction);
     wrap.appendChild(selectFrom);
 
-    const arrow = document.createElement('span');
-    arrow.textContent = '=>';
-    wrap.appendChild(arrow);
-
     const labelTo = document.createElement('label');
     labelTo.textContent = 'To: ';
     wrap.appendChild(labelTo);
 
     const selectTo = createSelectToId(transaction);
     wrap.appendChild(selectTo);
-
-    const labelInit = document.createElement('label');
-    labelInit.textContent = ':';
-    wrap.append(labelInit);
     
     const inputValue = createInputValue(transaction);
     wrap.appendChild(inputValue);
