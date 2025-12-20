@@ -64,11 +64,15 @@ function getYearMonth(dateTime) {
     return `${rawTime.getFullYear()}-${rawTime.getMonth()+1}`
 }
 function getDateTime() {
-    const today = new Date();
-    const yearMonth = document.getElementById('select-month');
-    const stringDateTime = `${yearMonth.value}-${today.getDate()}T07:00`;
+    const rawDate = new Date();
+    const year = rawDate.getFullYear();
+    const month = rawDate.getMonth() + 1;
+    const day = rawDate.getDate();
+    const hour = rawDate.getHours();
+    const minute = rawDate.getMinutes();
+    const second = rawDate.getSeconds();
+    const stringDateTime = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
     return stringDateTime
-}
 
 //#region Account
 function addAccount() {
@@ -611,4 +615,5 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     renderPage();
 });
+
 
