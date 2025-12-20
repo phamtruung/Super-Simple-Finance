@@ -25,6 +25,8 @@
         </div>
 
         <section id="income-expense-chart">
+            <svg id="chart" style="width:100%; height:300px;"></svg>
+
         </section>
 
         <section id="section-account">
@@ -35,23 +37,27 @@
             </header>
             <ul id="account-list"></ul>
         </section>
+
         <section id="section-cateories">
             <header class="section-header">
                 <button id="add-category" onclick="addCategory()" title="Add Category">+</button>
                 <h2>Categories</h2>
+                <input type="month" name="select-month" id="select-month">
                 <p id="categories-sum-budget" class="number">2000000</p>
                 <p id="categories-sum-use" class="number">1000000</p>
             </header>
             <ul id="categories-list"></ul>
         </section>
+
         <section id="section-transaction">
             <header class="section-header">
                 <button id="add-transaction" onclick="addTransaction()" title="Add Transaction">+</button>
                 <h2>Transactions</h2>
-                <input type="month" name="select-month" id="select-month">
+                <input type="week" name="select-week" id="select-week">
             </header>
             <ul id="transactions-list"></ul>
         </section>
+
     </main>
     <script src="script.js"></script>
 </body>
