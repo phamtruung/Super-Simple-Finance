@@ -56,7 +56,7 @@ section header {
     gap: var(--gap);
     padding: var(--gap);
     margin-top: var(--gap);
-    justify-item: flex-end;
+    justify-content: flex-end;
 }
 section header p {
     width: var(--width-number);
