@@ -358,20 +358,21 @@ function renderAccount(account, total) {
     const inputName = createInputName(account);
     wrap.appendChild(inputName);
 
-    const labelInit = document.createElement('label');
-    labelInit.textContent = ':';
-    wrap.append(labelInit);
-
     const inputValue = createInputValue(account);
     wrap.appendChild(inputValue);
 
     li.appendChild(wrap);
+    
+    const showBalance = document.createElement('div');
+    showBalance.className = "show-balance";
 
     const percent = createAccountPercent(account, total);
-    li.appendChild(percent);
+    showBalance.appendChild(percent);
 
     const balance = createAccountBalance(account);
-    li.appendChild(balance);
+    showBalance.appendChild(balance);
+    
+    li.appendChild(showBalance);
 
     return li;
 }
@@ -416,11 +417,16 @@ function renderCategory(category, yearMonth) {
 
     li.appendChild(wrap);
 
+    const showBalance = document.createElement('div');
+    showBalance.className = "show-balance";
+
     const showPercent = createCategoryPercent(category, yearMonth);
-    li.appendChild(showPercent);
+    showBalance.appendChild(showPercent);
 
     const numberUse = createCategoryUse(category, yearMonth);
-    li.appendChild(numberUse);
+    showBalance.appendChild(numberUse);
+    
+    li.appendChild(showBalance);
 
     return li;
 }
