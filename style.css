@@ -64,7 +64,7 @@ select {
     background-color: var(--bg);
     color: var(--fg);
     border-radius: var(--radius);
-    flex: 0.5;
+    flex: 1;
 }
 input:hover,
 select:hover {
@@ -103,7 +103,7 @@ li div {
     padding: var(--gap);
     gap: var(--gap);
 }
-p {
+p, input[type='numer'] {
     width: var(--width-number);
     text-align: right;
 }
