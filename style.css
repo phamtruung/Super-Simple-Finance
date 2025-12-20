@@ -27,6 +27,7 @@ html, body {
 }
 header {
     display: flex;
+    flex: 1;
     align-items: center;
     gap: var(--gap);
 }
@@ -48,30 +49,24 @@ section {
     margin-bottom: var(--gap);
 }
 section header {
-    display: flex;
-    align-items: center;
     background-color: var(--fg-second);
     border-radius: var(--radius);
-    gap: var(--gap);
     padding: var(--gap);
     margin-top: var(--gap);
-}
-section header p {
-    width: var(--width-number);
 }
 h2 {
     flex: 1;
 }
 input,
 select {
-    padding-left: var(--gap);
+    padding: var(--gap);
     border: none;
     background-color: var(--bg);
     color: var(--fg);
     border-radius: var(--radius);
+    flex: 0.5;
 }
 input:hover,
-input:focus,
 select:hover {
     background-color: var(--bg-second);
     color: var(--fg);
@@ -96,6 +91,7 @@ li {
     margin-top: var(--gap);
     border-bottom: 1px dashed var(--fg);
     padding-bottom: var(--gap);
+    flex: 1;
 }
 li div {
     display: flex;
@@ -104,41 +100,20 @@ li div {
     align-items: center;
     background-color: var(--bg-second);
     border-radius: var(--radius);
-    justify-content: flex-end;
     padding: var(--gap);
     gap: var(--gap);
 }
-li select {
-    flex: 1;
-}
-li input[type='number'] {
-    text-align: right;
-    flex: 1;
-    padding: var(--gap);
-}
-li input[type='text'],
-li input[type='datetime-local'],
-li span {
-    flex: 1;
-    padding: var(--gap);
-}
-li p {
+p {
     width: var(--width-number);
     text-align: right;
-}
-header p {
-    width: var(--width-number);
-    text-align: right;
-}
-span {
-    text-align: center;
 }
 progress {
     height: var(--gap);
+    width: 100%;
     border-radius: var(--radius);
 }
 progress::-webkit-progress-bar {
-  background-color: var(--bg-second);
+  background-color: var(--bg);
   border-radius: var(--radius);
 }
 progress::-webkit-progress-value {
@@ -161,9 +136,4 @@ progress::-webkit-progress-value {
     flex-wrap: nowrap;
     gap: var(--gap);
     margin-top: calc(var(--gap)*6);
-}
-.show-balance {
-    background-color: var(--bg);
-    padding: 0;
-    margin: 0;
 }
