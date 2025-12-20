@@ -144,6 +144,8 @@ function addTransaction() {
         datetime: getDateTime(),
     }
     data.transactionList.push(newTransaction);
+    const yearMonth = document.getElementById('select-month');
+    yearMonth.value = getYearMonth(new Date());
     renderPage();
 }
 
@@ -615,5 +617,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
     renderPage();
 });
+
 
 
