@@ -9,7 +9,7 @@
 </head>
 
 <body id="main-body">
-    <header>
+    <header class="main-header">
         <h1>Super Simple Finance</h1>
         <button onclick="exportJson()" title="ExportJson">↑</button>
         <button onclick="importJson()" title="ImportJson">↓</button>
@@ -21,24 +21,24 @@
         </div>
 
         <section id="section-account">
-            <header>
+            <header class="section-header">
                 <button id="add-account" onclick="addAccount()" title="Add Account">+</button>
                 <h2>Accounts</h2>
-                <p id="account-sum">2000000</p>
+                <p id="account-sum" class="number">2000000</p>
             </header>
             <ul id="account-list"></ul>
         </section>
         <section id="section-cateories">
-            <header>
+            <header class="section-header">
                 <button id="add-category" onclick="addCategory()" title="Add Category">+</button>
                 <h2>Categories</h2>
-                <p id="categories-sum-budget">2000000</p>
-                <p id="categories-sum-use">1000000</p>
+                <p id="categories-sum-budget" class="number">2000000</p>
+                <p id="categories-sum-use" class="number">1000000</p>
             </header>
             <ul id="categories-list"></ul>
         </section>
         <section id="section-transaction">
-            <header>
+            <header class="section-header">
                 <button id="add-transaction" onclick="addTransaction()" title="Add Transaction">+</button>
                 <h2>Transactions</h2>
                 <input type="month" name="select-month" id="select-month">
