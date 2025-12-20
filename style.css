@@ -9,12 +9,14 @@
     --cl-transfer: rgb(233, 233, 233);
 
     --width-number: 120px;
-    --radius: 8px;
-    --gap: 4px;
+    --radius: 4px;
+    --gap: 1px;
+    --progess-height: 6px;
 }
 * {
-    margin: 0;
-    padding: 0;
+    box-sizing: border-box;
+    margin: var(--gap);
+    padding: var(--gap);
     font-family: 'Courier New', Courier, monospace;
     font-size: 1rem;
 }
@@ -23,54 +25,13 @@ html, body {
     margin: auto;
     background-color: var(--bg);
     color: var(--fg);
-    padding: var(--gap);
-}
-header {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    gap: var(--gap);
-}
-main {
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap);
 }
 h1 {
-    font-size: 1.6rem;
-    padding: var(--gap);
+    font-size: 1.4rem;
     flex: 1;
-}
-section {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-top: var(--gap);
-    margin-bottom: var(--gap);
-}
-section header {
-    background-color: var(--fg-second);
-    border-radius: var(--radius);
-    padding: var(--gap);
-    margin-top: var(--gap);
 }
 h2 {
-    flex: 1;
-}
-input,
-select {
-    padding: var(--gap);
-    border: none;
-    background-color: var(--bg);
-    color: var(--fg);
-    border-radius: var(--radius);
-    flex: 1;
-}
-input:hover,
-select:hover {
-    background-color: var(--bg-second);
-    color: var(--fg);
-
+    flex: 1
 }
 button {
     min-width: 20px;
@@ -84,41 +45,75 @@ button:hover {
     color: var(--bg-second);
     background-color: var(--fg-second);
 }
-li {
-    display: flex;
-    align-items: center;
-    gap: var(--gap);
-    margin-top: var(--gap);
-    border-bottom: 1px dashed var(--fg);
-    padding-bottom: var(--gap);
-    flex: 1;
-}
-li div {
-    display: flex;
-    flex: 1;
-    flex-wrap: wrap;
-    align-items: center;
-    background-color: var(--bg-second);
-    border-radius: var(--radius);
-    padding: var(--gap);
-    gap: var(--gap);
-}
-p, input[type='numer'] {
-    width: var(--width-number);
-    text-align: right;
-}
 progress {
-    height: var(--gap);
+    height: var(--progess-height);
     width: 100%;
     border-radius: var(--radius);
 }
 progress::-webkit-progress-bar {
-  background-color: var(--bg);
+  background-color: var(--bg-second);
   border-radius: var(--radius);
 }
 progress::-webkit-progress-value {
   background-color: var(--fg-second);
   border-radius: var(--radius);
+}
+li {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px dashed var(--fg);
+}
+input,
+select {
+    border: none;
+    background-color: var(--bg);
+    color: var(--fg);
+    border-radius: var(--radius);
+    flex: 1;
+}
+input:hover,
+input:focus,
+select:hover {
+    background-color: var(--bg-second);
+    color: var(--fg);
+
+}
+input[type="number"] {
+    text-align: right;
+}
+select, input[type="number"] {
+    max-width: var(--width-number);
+}
+.main-header {
+    display: flex;
+    background-color: (var(--fg-second));
+    align-content: center;
+}
+.section-header {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: var(--fg-second);
+    border: none;
+    border-radius: var(--radius);
+    justify-content: flex-end;
+}
+.div-input {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
+    background-color: var(--bg);
+    border-radius: var(--radius);
+    justify-content: flex-end;
+}
+.div-show {
+    width: var(--width-number);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    background-color: transparent;
+    border-radius: var(--radius);
+    justify-items: center;
 }
 .Income {
     background-color: var(--cl-income);
@@ -129,11 +124,12 @@ progress::-webkit-progress-value {
 .Transfer {
     background-color: var(--cl-transfer);
 }
-#income-expense-chart {
+.number {
+    width: var(--width-number);
+    text-align: right;
+    font-weight: bold;
+}
+.fix {
+    flex: 1;
     display: flex;
-    align-items: end;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    gap: var(--gap);
-    margin-top: calc(var(--gap)*6);
 }
