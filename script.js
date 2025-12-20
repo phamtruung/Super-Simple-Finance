@@ -593,7 +593,7 @@ function createChart() {
 
 //#region RenderPage
 function renderPage() {
-    createChart();
+    //createChart();
     renderSectionAccount();
     renderSectionCategories();
     renderSectionTransactions();
