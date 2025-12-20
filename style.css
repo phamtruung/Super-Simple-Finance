@@ -51,11 +51,14 @@ section header {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    background-color: var(--bg-second);
+    background-color: var(--fg-second);
     border-radius: var(--radius);
     gap: var(--gap);
     padding: var(--gap);
     margin-top: var(--gap);
+}
+section header p {
+    flex: 1;
 }
 h2 {
     flex: 1;
@@ -93,6 +96,7 @@ li {
     gap: var(--gap);
     margin-top: var(--gap);
     border-bottom: 1px dashed var(--fg);
+    padding-bottom: var(--gap);
 }
 li div {
     display: flex;
@@ -111,11 +115,13 @@ li select {
 li input[type='number'] {
     text-align: right;
     flex: 1;
+    padding: var(--gap);
 }
 li input[type='text'],
 li input[type='datetime-local'],
 li span {
     flex: 1;
+    padding: var(--gap);
 }
 li p {
     width: var(--width-number);
