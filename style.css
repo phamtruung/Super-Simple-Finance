@@ -161,4 +161,5 @@ progress::-webkit-progress-value {
 .show-balance {
     display: flex;
     flex-direction: column;
+    background-color: var(--bg);
 }
