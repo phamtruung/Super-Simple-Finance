@@ -96,6 +96,8 @@ select, input[type="number"] {
     border: none;
     border-radius: var(--radius);
     justify-content: flex-end;
+    margin-left: 0;
+    margin-right: 0;
 }
 .div-input {
     display: flex;
@@ -139,6 +141,7 @@ select, input[type="number"] {
     justify-content: space-evenly;
     background-color: var(--fg-second);
     border-radius: var(--radius);
+
 }
 .btn {
     flex: 1;
@@ -151,5 +154,13 @@ section {
 }
 section.active {
     display: block; /* hiện khi có class active */
+}
+.select-time {
+    border-radius: 0px;
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+    text-align: right;
+    border-bottom: 1px dashed var(--fg);
 }
 

@@ -14,25 +14,33 @@
         <button onclick="exportJson()" title="ExportJson">↑</button>
         <button onclick="importJson()" title="ImportJson">↓</button>
         <input style="display: none;" type="file" id="file-import" accept="application/json" />
-
     </header>
+
     <main>
         <div id="navigation">
             <button class="btn" data-target="income-expense-chart">Chart</button>
-            <button class="btn" data-target="section-account">Acc</button>
-            <button class="btn" data-target="section-cateories">Cat</button>
+            <button class="btn" data-target="section-account">Account</button>
+            <button class="btn" data-target="section-cateories">Category</button>
             <button class="btn" data-target="section-transaction">Trans</button>
         </div>
 
         <section id="income-expense-chart">
+            <header class="section-header">
+                <h2>Income & Expense</h2>
+                <select id="select-year"></select>
+            </header>
             <svg id="chart" style="width:100%; height:300px;"></svg>
-
+            <header class="section-header">
+                <h2>Accounts</h2>
+            </header>
+            <svg id="pie" style="width:100%; height:300px;"></svg>
         </section>
 
         <section id="section-account">
             <header class="section-header">
                 <button id="add-account" onclick="addAccount()" title="Add Account">+</button>
                 <h2>Accounts</h2>
+                <p id="account-sum-init" class="number">2000000</p>
                 <p id="account-sum" class="number">2000000</p>
             </header>
             <ul id="account-list"></ul>
@@ -42,10 +50,10 @@
             <header class="section-header">
                 <button id="add-category" onclick="addCategory()" title="Add Category">+</button>
                 <h2>Categories</h2>
-                <input type="month" name="select-month" id="select-month">
                 <p id="categories-sum-budget" class="number">2000000</p>
                 <p id="categories-sum-use" class="number">1000000</p>
             </header>
+            <input class="select-time" type="month" name="select-month" id="select-month">
             <ul id="categories-list"></ul>
         </section>
 
@@ -53,8 +61,9 @@
             <header class="section-header">
                 <button id="add-transaction" onclick="addTransaction()" title="Add Transaction">+</button>
                 <h2>Transactions</h2>
-                <input type="week" name="select-week" id="select-week">
+                <p id="transactions-sum" class="number">1000000</p>
             </header>
+            <input class="select-time" type="week" name="select-week" id="select-week">
             <ul id="transactions-list"></ul>
         </section>
 

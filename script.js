@@ -5,6 +5,7 @@ let data = {
     categoriesList: [],
     transactionList: []
 }
+let viewYear;
 
 //#region Data
 function openDB() {
@@ -87,15 +88,18 @@ function getWeek(dateTime) {
 
 function getDateTime() {
     const rawDate = new Date();
-    const year = rawDate.getFullYear();
-    const month = rawDate.getMonth() + 1;
-    const day = rawDate.getDate();
-    const hour = rawDate.getHours();
-    const minute = rawDate.getMinutes();
-    const second = rawDate.getSeconds();
+
+    const year   = rawDate.getFullYear();
+    const month  = String(rawDate.getMonth() + 1).padStart(2, '0');
+    const day    = String(rawDate.getDate()).padStart(2, '0');
+    const hour   = String(rawDate.getHours()).padStart(2, '0');
+    const minute = String(rawDate.getMinutes()).padStart(2, '0');
+    const second = String(rawDate.getSeconds()).padStart(2, '0');
+
     const stringDateTime = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
-    return stringDateTime
+    return stringDateTime;
 }
+
 
 //#region Account
 function addAccount() {
@@ -166,15 +170,42 @@ function addTransaction() {
         value: 0,
         datetime: getDateTime(),
     }
+    console.log(newTransaction);
     data.transactionList.push(newTransaction);
-    const yearMonth = document.getElementById('select-month');
-    yearMonth.value = getYearMonth(new Date());
+    const week = document.getElementById('select-week');
+    week.value = getWeek(new Date());
     renderPage();
 }
 
 function deleteTransaction(transactionId) {
     data.transactionList = data.transactionList.filter(transaction => transaction.id !== transactionId);
     renderPage();
+}
+function calcTransactionByYear(year) {
+    const income = [];
+    const expense = [];
+
+    for (let month = 0; month < 12; month++) {
+        let sumIncome = 0;
+        let sumExpense = 0;
+
+        data.transactionList.forEach(transaction => {
+        const d = new Date(transaction.datetime);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+            if (transaction.type === "Income") {
+                sumIncome += parseFloat(transaction.value);
+            }
+            if (transaction.type === "Expense") {
+                sumExpense += parseFloat(transaction.value);
+            }
+        }
+        });
+
+        income.push(sumIncome);
+        expense.push(sumExpense);
+    }
+
+    return { income, expense };
 }
 
 //#region UI
@@ -192,7 +223,7 @@ function createInputValue(object) {
     const inputName = document.createElement('input');
     inputName.type = 'number';
     inputName.value = object.value;
-    inputName.classList.add(object.type);
+    if (object.type) inputName.classList.add(object.type);
     inputName.addEventListener('change', (e) => {
         object.value = parseFloat(e.target.value);
         renderPage();
@@ -300,7 +331,7 @@ function createSelectTransactionType(transaction) {
         selectType.appendChild(option)
     })
     selectType.value = transaction.type;
-    selectType.classList.add(transaction.type);
+    if (transaction.type) selectType.classList.add(transaction.type);
     selectType.addEventListener('change', (e) => {
         transaction.type = e.target.value;
         renderPage();
@@ -421,6 +452,11 @@ function renderAccount(account, total) {
 }
 
 function renderSectionAccount() {
+    const numberSumInit = document.getElementById('account-sum-init');
+    let sumInit = 0;
+    data.accountList.forEach(account => sumInit += account.value);
+    numberSumInit.textContent = sumInit.toLocaleString();
+
     const accountSum = document.getElementById('account-sum')
     let sum = 0;
     data.accountList.forEach(account => sum += calcAccountBalance(account))
@@ -547,6 +583,10 @@ function renderSectionTransactions() {
         selectWeek.value = getWeek(new Date());
     }
     selectWeek.addEventListener('change', () => renderPage());
+
+    const numberSum = document.getElementById('transactions-sum');
+    let sum = 0;
+
     const ul = document.getElementById('transactions-list');
     ul.innerHTML = '';
 
@@ -555,8 +595,16 @@ function renderSectionTransactions() {
         if (getWeek(transaction.datetime) === selectWeek.value) {
             const li = renderTransaction(transaction);
             ul.appendChild(li);
+            if (transaction.type === "Income") {
+                sum += parseFloat(transaction.value);
+            }
+            if (transaction.type === "Expense") {
+                sum -= parseFloat(transaction.value);
+            }
         }
     });
+
+    numberSum.textContent = sum.toLocaleString();
 }
 
 //#region ExportImport
@@ -618,197 +666,338 @@ function navigation() {
     sections[0].classList.add('active');
 }
 
-//#region Chart
-class ChartSVG {
-  constructor(svgElement, income, expense, config) {
+//#region IncomExpenseChart
+class IncomExpenseChart {
+    constructor(svgElement, income, expense, config) {
+        this.svg = svgElement;
+        this.income = income;
+        this.expense = expense;
+        this.months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        this.config = config;
+
+        this.height = config.sizes.svgHeight;
+
+        // Bắt buộc để browser tính width đúng
+        this.svg.style.width = "100%";
+        this.svg.style.height = `${this.height}px`;
+        this.svg.style.display = "block"; // tránh inline svg gây width bất thường
+        this.svg.style.background = this.config.colors.background;
+
+        // Quan sát kích thước container để re-render
+        this.resizeObserver = new ResizeObserver(() => {
+        this.safeRender();
+        });
+        this.resizeObserver.observe(this.svg);
+    }
+
+    el(tag, attrs = {}) {
+        const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        for (const [k, v] of Object.entries(attrs)) {
+            if (v === null || v === undefined) continue;
+            const val = typeof v === 'number' ? (Number.isFinite(v) ? String(v) : null) : String(v);
+            if (val !== null) node.setAttribute(k, val);
+        }
+        return node;
+    }
+
+
+    getActualWidth() {
+        // Ưu tiên boundingClientRect; nếu 0, thử clientWidth
+        const w = this.svg.getBoundingClientRect().width || this.svg.clientWidth || 0;
+        return Math.max(0, Math.floor(w));
+    }
+
+    scaleX(i, monthGap) {
+        return this.config.sizes.marginLeft + i * monthGap;
+    }
+
+    scaleY(val, maxVal) {
+        const innerHeight = this.height - this.config.sizes.marginTop - this.config.sizes.marginBottom;
+        if (maxVal <= 0) {
+            // fallback: vẽ tất cả ở baseline
+            return this.config.sizes.marginTop + innerHeight;
+        }
+        return this.config.sizes.marginTop + innerHeight - (val / maxVal) * innerHeight;
+    }
+
+    // Render an toàn: nếu width=0 thì chờ đến khi có width > 0
+    safeRender(maxWaitMs = 1000) {
+        const start = performance.now();
+        const tick = () => {
+        const w = this.getActualWidth();
+        if (w > 0) {
+            this.render();
+            return;
+        }
+        if (performance.now() - start >= maxWaitMs) {
+            // fallback: đặt width giả định để không trắng trang
+            this.svg.style.minWidth = "320px";
+            this.render();
+            return;
+        }
+        requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+    }
+
+    render() {
+        const actualWidth = this.getActualWidth();
+        if (!actualWidth) return; // bảo vệ lần gọi sớm
+
+        this.svg.innerHTML = ""; // xoá chart cũ
+
+        const difference = this.income.map((val,i)=>val-this.expense[i]);
+        let maxVal = Math.max(...this.income, ...this.expense, ...difference);
+        if (maxVal <= 0) {
+            maxVal = 1; // tránh chia cho 0
+        }
+
+        const innerHeight = this.height - this.config.sizes.marginTop - this.config.sizes.marginBottom;
+
+        // khoảng cách động theo width thực tế
+        const monthGap = (actualWidth - this.config.sizes.marginLeft - this.config.sizes.marginRight) / this.months.length;
+        const barWidth = 20; // giữ bar cố định
+        const offset = 5;    // expense lệch sang phải 1 chút
+
+        // Vẽ bar (income dưới, expense trên)
+        this.months.forEach((m,i)=>{
+        const xBase = this.scaleX(i, monthGap);
+        const yIncome = this.scaleY(this.income[i], maxVal);
+        const yExpense = this.scaleY(this.expense[i], maxVal);
+
+        this.svg.appendChild(this.el('rect',{
+            x:xBase,
+            y:yIncome,
+            width:barWidth,
+            height:this.config.sizes.marginTop+innerHeight-yIncome,
+            fill:this.config.colors.income,
+            rx:this.config.sizes.barRadius,
+            ry:this.config.sizes.barRadius
+        }));
+
+        this.svg.appendChild(this.el('rect',{
+            x:xBase + offset,
+            y:yExpense,
+            width:barWidth,
+            height:this.config.sizes.marginTop+innerHeight-yExpense,
+            fill:this.config.colors.expense,
+            rx:this.config.sizes.barRadius,
+            ry:this.config.sizes.barRadius
+        }));
+
+        const label = this.el('text',{
+            x:xBase + barWidth/2,
+            y:this.config.sizes.marginTop+innerHeight+20,
+            fill:this.config.colors.label,
+            'text-anchor':'middle'
+        });
+        label.textContent = m;
+        this.svg.appendChild(label);
+        });
+
+        // Line Difference
+        const pathD = difference.map((d,i)=>{
+        const x = this.scaleX(i, monthGap)+barWidth/2;
+        const y = this.scaleY(d, maxVal);
+        return `${i===0?'M':'L'} ${x} ${y}`;
+        }).join(' ');
+
+        this.svg.appendChild(this.el('path',{
+        d:pathD,
+        stroke:this.config.colors.difference,
+        'stroke-width':2,
+        fill:'none'
+        }));
+
+        // Points Difference
+        difference.forEach((d,i)=>{
+        this.svg.appendChild(this.el('circle',{
+            cx:this.scaleX(i, monthGap)+barWidth/2,
+            cy:this.scaleY(d,maxVal),
+            r:this.config.sizes.pointRadius,
+            fill:this.config.colors.difference,
+            stroke:'#fff',
+            'stroke-width':1.5
+        }));
+        });
+    }
+}
+
+//#region AccountPieChart
+class AccountPieChart {
+  constructor(svgElement, accounts, config = {}) {
     this.svg = svgElement;
-    this.income = income;
-    this.expense = expense;
-    this.months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    this.config = config;
+    this.accounts = accounts; // [{id:1, name:"Bank A", value:1000}, ...]
+    this.config = Object.assign({
+      colors: ["#FDB5CE", "#547792", "#E9762B", "#3B9797", "#41644A", "#00bcd4"],
+      radius: 100,
+      centerX: 170,
+      centerY: 150,
+      labelColor: "#333",
+    }, config);
 
-    this.height = config.sizes.svgHeight;
-
-    // Bắt buộc để browser tính width đúng
-    this.svg.style.width = "100%";
-    this.svg.style.height = `${this.height}px`;
-    this.svg.style.display = "block"; // tránh inline svg gây width bất thường
-    this.svg.style.background = this.config.colors.background;
-
-    // Quan sát kích thước container để re-render
-    this.resizeObserver = new ResizeObserver(() => {
-      this.safeRender();
-    });
-    this.resizeObserver.observe(this.svg);
+    this.svg.setAttribute("width", this.config.centerX * 2);
+    this.svg.setAttribute("height", this.config.centerY * 2);
   }
 
   el(tag, attrs = {}) {
-    const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
-    for (const [k,v] of Object.entries(attrs)) node.setAttribute(k,v);
+    const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      node.setAttribute(k, v);
+    }
     return node;
   }
 
-  getActualWidth() {
-    // Ưu tiên boundingClientRect; nếu 0, thử clientWidth
-    const w = this.svg.getBoundingClientRect().width || this.svg.clientWidth || 0;
-    return Math.max(0, Math.floor(w));
-  }
+    render() {
+    this.svg.innerHTML = "";
 
-  scaleX(i, monthGap) {
-    return this.config.sizes.marginLeft + i * monthGap;
-  }
+    const width  = this.svg.clientWidth  || this.svg.getBoundingClientRect().width  || this.config.centerX * 2;
+    const height = this.svg.clientHeight || this.svg.getBoundingClientRect().height || this.config.centerY * 2;
 
-  scaleY(val, maxVal) {
-    const innerHeight = this.height - this.config.sizes.marginTop - this.config.sizes.marginBottom;
-    return this.config.sizes.marginTop + innerHeight - (val / maxVal) * innerHeight;
-  }
+    // đặt lại tâm ở giữa
+    const cx = width / 2;
+    const cy = height / 2;
 
-  // Render an toàn: nếu width=0 thì chờ đến khi có width > 0
-  safeRender(maxWaitMs = 1000) {
-    const start = performance.now();
-    const tick = () => {
-      const w = this.getActualWidth();
-      if (w > 0) {
-        this.render();
+    const total = this.accounts.reduce((sum, acc) => sum + calcAccountBalance(acc), 0);
+    if (total <= 0) {
+        const msg = this.el("text", {
+        x: cx,
+        y: cy,
+        fill: this.config.labelColor,
+        "text-anchor": "middle",
+        "alignment-baseline": "middle"
+        });
+        msg.textContent = "No balance data";
+        this.svg.appendChild(msg);
         return;
-      }
-      if (performance.now() - start >= maxWaitMs) {
-        // fallback: đặt width giả định để không trắng trang
-        this.svg.style.minWidth = "320px";
-        this.render();
-        return;
-      }
-      requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }
+    }
 
-  render() {
-    const actualWidth = this.getActualWidth();
-    if (!actualWidth) return; // bảo vệ lần gọi sớm
+    let startAngle = 0;
+    this.accounts.forEach((acc, i) => {
+        const balance = calcAccountBalance(acc);
+        const sliceAngle = (balance / total) * 2 * Math.PI;
+        const endAngle = startAngle + sliceAngle;
 
-    this.svg.innerHTML = ""; // xoá chart cũ
+        const x1 = cx + this.config.radius * Math.cos(startAngle);
+        const y1 = cy + this.config.radius * Math.sin(startAngle);
+        const x2 = cx + this.config.radius * Math.cos(endAngle);
+        const y2 = cy + this.config.radius * Math.sin(endAngle);
 
-    const difference = this.income.map((val,i)=>val-this.expense[i]);
-    const maxVal = Math.max(...this.income, ...this.expense, ...difference);
+        const largeArc = sliceAngle > Math.PI ? 1 : 0;
 
-    const innerHeight = this.height - this.config.sizes.marginTop - this.config.sizes.marginBottom;
+        const pathData = [
+        `M ${cx} ${cy}`,
+        `L ${x1} ${y1}`,
+        `A ${this.config.radius} ${this.config.radius} 0 ${largeArc} 1 ${x2} ${y2}`,
+        "Z"
+        ].join(" ");
 
-    // khoảng cách động theo width thực tế
-    const monthGap = (actualWidth - this.config.sizes.marginLeft - this.config.sizes.marginRight) / this.months.length;
-    const barWidth = 20; // giữ bar cố định
-    const offset = 5;    // expense lệch sang phải 1 chút
+        const path = this.el("path", {
+        d: pathData,
+        fill: this.config.colors[i % this.config.colors.length]
+        });
+        this.svg.appendChild(path);
 
-    // Vẽ bar (income dưới, expense trên)
-    this.months.forEach((m,i)=>{
-      const xBase = this.scaleX(i, monthGap);
-      const yIncome = this.scaleY(this.income[i], maxVal);
-      const yExpense = this.scaleY(this.expense[i], maxVal);
+        // Label
+        const midAngle = startAngle + sliceAngle / 2;
+        const lx = cx + (this.config.radius + 20) * Math.cos(midAngle);
+        const ly = cy + (this.config.radius + 20) * Math.sin(midAngle);
 
-      this.svg.appendChild(this.el('rect',{
-        x:xBase,
-        y:yIncome,
-        width:barWidth,
-        height:this.config.sizes.marginTop+innerHeight-yIncome,
-        fill:this.config.colors.income,
-        rx:this.config.sizes.barRadius,
-        ry:this.config.sizes.barRadius
-      }));
+        const label = this.el("text", {
+        x: lx,
+        y: ly,
+        fill: this.config.labelColor,
+        "text-anchor": "middle",
+        "alignment-baseline": "middle",
+        "font-size": "12"
+        });
+        label.textContent = acc.name;
+        this.svg.appendChild(label);
 
-      this.svg.appendChild(this.el('rect',{
-        x:xBase + offset,
-        y:yExpense,
-        width:barWidth,
-        height:this.config.sizes.marginTop+innerHeight-yExpense,
-        fill:this.config.colors.expense,
-        rx:this.config.sizes.barRadius,
-        ry:this.config.sizes.barRadius
-      }));
-
-      const label = this.el('text',{
-        x:xBase + barWidth/2,
-        y:this.config.sizes.marginTop+innerHeight+20,
-        fill:this.config.colors.label,
-        'text-anchor':'middle'
-      });
-      label.textContent = m;
-      this.svg.appendChild(label);
+        startAngle = endAngle;
     });
-
-    // Line Difference
-    const pathD = difference
-      .map((d,i)=>`${i===0?'M':'L'} ${this.scaleX(i, monthGap)+barWidth/2} ${this.scaleY(d,maxVal)}`)
-      .join(' ');
-    this.svg.appendChild(this.el('path',{
-      d:pathD,
-      stroke:this.config.colors.difference,
-      'stroke-width':2,
-      fill:'none'
-    }));
-
-    // Points Difference
-    difference.forEach((d,i)=>{
-      this.svg.appendChild(this.el('circle',{
-        cx:this.scaleX(i, monthGap)+barWidth/2,
-        cy:this.scaleY(d,maxVal),
-        r:this.config.sizes.pointRadius,
-        fill:this.config.colors.difference,
-        stroke:'#fff',
-        'stroke-width':1.5
-      }));
-    });
-  }
+    }
 }
 
-
+//#region SectionChart
 function createChart() {
-  const income = [500,600,550,700,800,750,900,950,1000,1100,1050,1200];
-  const expense = [400,450,500,480,600,620,700,680,750,800,780,850];
+    const selectYear = document.getElementById('select-year');
+    selectYear.innerHTML = '';
 
-  const config = {
-    colors:{
-      income:"rgb(188, 221, 213)",
-      expense:"rgb(230, 206, 206)",
-      difference:"rgb(37, 37, 37)",
-      label:"rgb(37, 37, 37)",
-      background: "rgb(233, 233, 233)",
-    },
-    sizes:{
-      svgHeight:300,
-      barRadius:4,
-      pointRadius:4,
-      marginTop:20,
-      marginRight:0,
-      marginBottom:40,
-      marginLeft:0
-    },
-    spacing:{monthGap:50}
-  };
+    const now = new Date();
+    const nowYear = now.getFullYear();
+    const listYear = [nowYear, nowYear - 1, nowYear - 2];
 
-  const chart = new ChartSVG(document.getElementById('chart'), income, expense, config);
+    listYear.forEach(y => {
+        const option = document.createElement('option');
+        option.value = y;
+        option.textContent = y;
+        if (viewYear === y) option.checked = true;
+        selectYear.appendChild(option);
+    });
 
-  // render sau khi trang load xong
-  window.addEventListener("load", () => {
+    // hàm vẽ chart theo năm
+    function renderChart(yearInt) {
+        const { income, expense } = calcTransactionByYear(yearInt);
+
+        if (income && expense) {
+            const config = {
+                colors:{
+                    income:"rgb(188, 221, 213)",
+                    expense:"rgb(230, 206, 206)",
+                    difference:"rgb(37, 37, 37)",
+                    label:"rgb(37, 37, 37)",
+                    background: "rgb(233, 233, 233)",
+                },
+                sizes:{
+                    svgHeight:300,
+                    barRadius:4,
+                    pointRadius:4,
+                    marginTop:20,
+                    marginRight:0,
+                    marginBottom:80,
+                    marginLeft:0
+                },
+                spacing:{monthGap:50}
+                };
+
+            const chart = new IncomExpenseChart(document.getElementById('chart'), income, expense, config);
+            chart.render();
+
+            // render lại khi resize
+            window.addEventListener("resize", () => chart.render());
+        }
+
+
+    }
+
+    // render mặc định theo năm hiện tại
+    renderChart(viewYear);
+
+    const chart = new AccountPieChart(document.getElementById("pie"), data.accountList);
     chart.render();
-  });
 
-  // render lại khi resize
-  window.addEventListener("resize", () => {
-    chart.render();
-  });
+
+
+    // khi chọn năm khác thì vẽ lại
+    selectYear.addEventListener("change", () => {
+        const yearInt = parseInt(selectYear.value, 10);
+        renderChart(yearInt);
+    });
 }
+
 
 //#region RenderPage
 function renderPage() {
     renderSectionAccount();
     renderSectionCategories();
     renderSectionTransactions();
-    createChart();
     saveData();
-
+    createChart();
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+    viewYear = 2025
     const loaded = await loadData();
     if (loaded) {
         data = loaded; // gán lại dữ liệu từ IndexedDB
