@@ -366,11 +366,11 @@ function renderAccount(account, total) {
     const showBalance = document.createElement('div');
     showBalance.className = "show-balance";
 
-    const percent = createAccountPercent(account, total);
-    showBalance.appendChild(percent);
-
     const balance = createAccountBalance(account);
     showBalance.appendChild(balance);
+    
+    const percent = createAccountPercent(account, total);
+    showBalance.appendChild(percent);
     
     li.appendChild(showBalance);
 
@@ -416,11 +416,11 @@ function renderCategory(category, yearMonth) {
     const showBalance = document.createElement('div');
     showBalance.className = "show-balance";
 
-    const showPercent = createCategoryPercent(category, yearMonth);
-    showBalance.appendChild(showPercent);
-
     const numberUse = createCategoryUse(category, yearMonth);
     showBalance.appendChild(numberUse);
+    
+    const showPercent = createCategoryPercent(category, yearMonth);
+    showBalance.appendChild(showPercent);
     
     li.appendChild(showBalance);
 
