@@ -49,14 +49,12 @@ section {
 }
 section header {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     background-color: var(--fg-second);
     border-radius: var(--radius);
     gap: var(--gap);
     padding: var(--gap);
     margin-top: var(--gap);
-    justify-content: flex-end;
 }
 section header p {
     width: var(--width-number);
@@ -165,8 +163,9 @@ progress::-webkit-progress-value {
     margin-top: calc(var(--gap)*6);
 }
 .show-balance {
-    width: var(--width-number);
+    max-width: var(--width-number);
     display: flex;
+    flex-direction: column;
     justify-content: flex-end;
     background-color: var(--bg);
 }
