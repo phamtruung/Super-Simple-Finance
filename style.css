@@ -101,7 +101,7 @@ li div {
     flex: 1;
     flex-wrap: wrap;
     align-items: center;
-    background-color: var(--bg);
+    background-color: var(--bg-second);
     border-radius: var(--radius);
     justify-content: flex-end;
     padding: var(--gap);
