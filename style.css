@@ -73,10 +73,6 @@ select:hover {
     color: var(--fg);
 
 }
-input[type='number'] {
-    text-align: right;
-    flex: 0.5;
-}
 button {
     min-width: 20px;
     height: 20px;
@@ -108,10 +104,13 @@ li div {
     padding: var(--gap);
     gap: var(--gap);
 }
-li div select {
-    flex: 0.3;
+li select {
+    flex: 1;
 }
-
+li input[type='number'] {
+    text-align: right;
+    flex: 1;
+}
 li input[type='text'],
 li input[type='datetime-local'],
 li span {
