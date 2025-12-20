@@ -304,7 +304,13 @@ function createSelectFromId(transaction) {
         renderPage();
     });
 
-    return selectFrom;
+    const div = document.createElement('div');
+    div.className = 'fix';
+    const labelFrom = document.createElement('label');
+    labelFrom.textContent = 'From: ';
+    div.append(labelFrom, selectFrom);
+
+    return div;
 }
 function createSelectToId(transaction) {
     const selectTo = document.createElement('select');
@@ -331,7 +337,14 @@ function createSelectToId(transaction) {
         transaction.toId = e.target.value;
         renderPage();
     });
-    return selectTo;
+
+    const div = document.createElement('div');
+    div.className = 'fix';
+    const labelTo = document.createElement('label');
+    labelTo.textContent = 'To: ';
+    div.append(labelTo, selectTo);
+
+    return div;
 }
 function createInputDateTime(transaction) {
     const input = document.createElement('input');
@@ -353,21 +366,27 @@ function renderAccount(account, total) {
     const deleteButton = createDeleteAccountButton(account);
     li.appendChild(deleteButton);
 
-    const wrap = document.createElement('div');
+    const divInput = document.createElement('div');
+    divInput.className = 'div-input';
 
     const inputName = createInputName(account);
-    wrap.appendChild(inputName);
+    divInput.appendChild(inputName);
 
     const inputValue = createInputValue(account);
-    wrap.appendChild(inputValue);
+    divInput.appendChild(inputValue);
+
+    li.appendChild(divInput);
+
+    const divShow = document.createElement('div');
+    divShow.className = 'div-show';
 
     const balance = createAccountBalance(account);
-    wrap.appendChild(balance);
-    
+    divShow.appendChild(balance);
+
     const percent = createAccountPercent(account, total);
-    wrap.appendChild(percent);
-    
-    li.appendChild(wrap);
+    divShow.appendChild(percent);
+
+    li.appendChild(divShow)
 
     return li;
 }
@@ -395,24 +414,30 @@ function renderCategory(category, yearMonth) {
     const deleteButton = createDeleteCategoryButton(category);
     li.appendChild(deleteButton);
 
-    const wrap = document.createElement('div');
-
-    const selectType = createSelectCategoryType(category);
-    wrap.appendChild(selectType);
+    const divInput = document.createElement('div');
+    divInput.className = 'div-input';
 
     const inputName = createInputName(category);
-    wrap.appendChild(inputName);
+    divInput.appendChild(inputName);
+
+    const selectType = createSelectCategoryType(category);
+    divInput.appendChild(selectType);
 
     const inputValue = createInputValue(category);
-    wrap.appendChild(inputValue);
+    divInput.appendChild(inputValue);
+
+    li.appendChild(divInput);
+
+    const divShow = document.createElement('div');
+    divShow.className = 'div-show';
 
     const numberUse = createCategoryUse(category, yearMonth);
-    wrap.appendChild(numberUse);
-    
+    divShow.appendChild(numberUse);
+
     const showPercent = createCategoryPercent(category, yearMonth);
-    wrap.appendChild(showPercent);
-    
-    li.appendChild(wrap);
+    divShow.appendChild(showPercent);
+
+    li.appendChild(divShow);
 
     return li;
 }
@@ -437,14 +462,16 @@ function renderSectionCategories() {
 
     const numberSumUse = document.getElementById('categories-sum-use');
     let sumUse = 0;
-    data.categoriesList.forEach(category => {
-        if (category.type === 'Income') {
-            sumUse += calcCategoryUse(category, yearMonth.value);
-        }
-        if (category.type === 'Expense') {
-            sumUse -= calcCategoryUse(category, yearMonth.value);
-        }
-    });
+    data.categoriesList
+        .sort((a, b) => b.type.localeCompare(a.type))
+        .forEach(category => {
+            if (category.type === 'Income') {
+                sumUse += calcCategoryUse(category, yearMonth.value);
+            }
+            if (category.type === 'Expense') {
+                sumUse -= calcCategoryUse(category, yearMonth.value);
+            }
+        });
     numberSumUse.textContent = sumUse.toLocaleString();
 
     const ul = document.getElementById('categories-list');
@@ -464,32 +491,25 @@ function renderTransaction(transaction) {
     const deleteButton = createDeleteTransactionButton(transaction.id);
     li.appendChild(deleteButton);
 
-    const wrap = document.createElement('div');
+    const divInput = document.createElement('div');
+    divInput.className = 'div-input';
 
     const inputDatetime = createInputDateTime(transaction);
-    wrap.appendChild(inputDatetime);
+    divInput.appendChild(inputDatetime);
 
     const selectType = createSelectTransactionType(transaction);
-    wrap.appendChild(selectType);
-
-    const labelFrom = document.createElement('label');
-    labelFrom.textContent = 'From: ';
-    wrap.appendChild(labelFrom);
+    divInput.appendChild(selectType);
 
     const selectFrom = createSelectFromId(transaction);
-    wrap.appendChild(selectFrom);
-
-    const labelTo = document.createElement('label');
-    labelTo.textContent = 'To: ';
-    wrap.appendChild(labelTo);
+    divInput.appendChild(selectFrom);
 
     const selectTo = createSelectToId(transaction);
-    wrap.appendChild(selectTo);
-    
-    const inputValue = createInputValue(transaction);
-    wrap.appendChild(inputValue);
+    divInput.appendChild(selectTo);
 
-    li.appendChild(wrap);
+    const inputValue = createInputValue(transaction);
+    divInput.appendChild(inputValue);
+
+    li.appendChild(divInput);
 
     return li;
 }
@@ -577,7 +597,7 @@ function createChart() {
 
 //#region RenderPage
 function renderPage() {
-    //createChart();
+    // createChart();
     renderSectionAccount();
     renderSectionCategories();
     renderSectionTransactions();
