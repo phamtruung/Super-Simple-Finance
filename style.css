@@ -106,12 +106,6 @@ li div {
     justify-content: flex-end;
     padding: var(--gap);
 }
-li div {
-    display: flex;
-    align-items: center;
-    justify-items: right;
-    gap: var(--gap)
-}
 li div select {
     width: var(--width-number);
 }
@@ -133,6 +127,7 @@ span {
     text-align: center;
 }
 progress {
+    width: 100%;
     height: var(--gap);
     border-radius: var(--radius);
 }
@@ -152,9 +147,6 @@ progress::-webkit-progress-value {
 }
 .Transfer {
     background-color: var(--cl-transfer);
-}
-input[type='month'] {
-    width: 156px;
 }
 #income-expense-chart {
     display: flex;
