@@ -163,9 +163,7 @@ progress::-webkit-progress-value {
     margin-top: calc(var(--gap)*6);
 }
 .show-balance {
-    max-width: var(--width-number);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
     background-color: var(--bg);
+    padding: 0;
+    margin: 0;
 }
