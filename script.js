@@ -590,7 +590,7 @@ function navigation() {
 
     // chọn mặc định nút 3 và section 3
     buttons[1].classList.add('active');
-    sections[2].classList.add('active');
+    sections[1].classList.add('active');
 }
 
 //#region Chart
@@ -642,4 +642,5 @@ window.addEventListener("DOMContentLoaded", async () => {
     renderPage();
     navigation();
 });
+
 
