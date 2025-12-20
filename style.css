@@ -48,6 +48,7 @@ section {
 }
 section header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     background-color: var(--bg-second);
     border-radius: var(--radius);
@@ -74,7 +75,7 @@ select:hover {
 }
 input[type='number'] {
     text-align: right;
-    width: var(--width-number);
+    flex: 0.5;
 }
 button {
     min-width: 20px;
@@ -105,9 +106,10 @@ li div {
     border-radius: var(--radius);
     justify-content: flex-end;
     padding: var(--gap);
+    gap: var(--gap);
 }
 li div select {
-    width: var(--width-number);
+    flex: 0.3;
 }
 
 li input[type='text'],
