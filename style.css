@@ -9,8 +9,8 @@
     --cl-transfer: rgb(233, 233, 233);
 
     --width-number: 120px;
-    --radius: 10px;
-    --gap: 6px;
+    --radius: 8px;
+    --gap: 4px;
 }
 * {
     margin: 0;
@@ -44,7 +44,8 @@ section {
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-top: calc(var(--gap)*6);
+    margin-top: var(--gap);
+    margin-bottom: var(--gap);
 }
 section header {
     display: flex;
@@ -54,6 +55,7 @@ section header {
     border-radius: var(--radius);
     gap: var(--gap);
     padding: var(--gap);
+    margin-top: var(--gap);
 }
 h2 {
     flex: 1;
@@ -89,7 +91,6 @@ li {
     display: flex;
     align-items: center;
     gap: var(--gap);
-    margin-left: var(--gap);
     margin-top: var(--gap);
     border-bottom: 1px dashed var(--fg);
 }
@@ -128,7 +129,6 @@ span {
     text-align: center;
 }
 progress {
-    width: 100%;
     height: var(--gap);
     border-radius: var(--radius);
 }
@@ -159,6 +159,5 @@ progress::-webkit-progress-value {
 }
 .show-balance {
     display: flex;
-    flex-direction: column;
     background-color: var(--bg);
 }
