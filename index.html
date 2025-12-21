@@ -13,6 +13,7 @@
         <h1>Super Simple Finance</h1>
         <button onclick="exportJson()" title="ExportJson">↑</button>
         <button onclick="importJson()" title="ImportJson">↓</button>
+        <button onclick="clearData()">ⱥ</button>
         <input style="display: none;" type="file" id="file-import" accept="application/json" />
     </header>
 
@@ -38,8 +39,9 @@
 
         <section id="section-account">
             <header class="section-header">
-                <button id="add-account" onclick="addAccount()" title="Add Account">+</button>
+                <button id="add-accounts" onclick="addAccount()" title="Add Account">+</button>
                 <h2>Accounts</h2>
+                <button id="sort-account" onclick="sortAccounts()">↕</button>
                 <p id="account-sum-init" class="number">2000000</p>
                 <p id="account-sum" class="number">2000000</p>
             </header>
@@ -53,7 +55,11 @@
                 <p id="categories-sum-budget" class="number">2000000</p>
                 <p id="categories-sum-use" class="number">1000000</p>
             </header>
-            <input class="select-time" type="month" name="select-month" id="select-month">
+            <div class="select-time">
+                <button id="sort-catagory" onclick="sortCategory()" >↕</button>
+                <input  type="month" name="select-month" id="select-month">
+            </div>
+            
             <ul id="categories-list"></ul>
         </section>
 
@@ -63,7 +69,11 @@
                 <h2>Transactions</h2>
                 <p id="transactions-sum" class="number">1000000</p>
             </header>
-            <input class="select-time" type="week" name="select-week" id="select-week">
+            <div class="select-time">
+                <button id="all-transactions" onclick="showAllTransactions()">☼</button>
+                <input type="week" name="select-week" id="select-week">
+            </div>
+
             <ul id="transactions-list"></ul>
         </section>
 

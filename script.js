@@ -53,6 +53,16 @@ async function loadData() {
         request.onerror = (event) => reject(event.target.error);
     });
 }
+function clearData() {
+    if (confirm("Clear All Data")) {
+        data = {
+            accountList: [],
+            categoriesList: [],
+            transactionList: []
+        }
+        renderPage();
+    }
+}
 
 //#region Ultilities
 function UUID() {
@@ -112,8 +122,10 @@ function addAccount() {
     renderPage();
 }
 function deleteAccount(accountId) {
-    data.accountList = data.accountList.filter(account => account.id !== accountId);
-    renderPage();
+    if (confirm("Delete Account")) {
+        data.accountList = data.accountList.filter(account => account.id !== accountId);
+        renderPage();
+    }
 }
 function calcAccountBalance(account) {
     let balance = parseFloat(account.value);
@@ -140,8 +152,10 @@ function addCategory() {
     renderPage();
 }
 function deleteCategory(categoryId) {
-    data.categoriesList = data.categoriesList.filter(category => category.id !== categoryId);
-    renderPage();
+    if (confirm("Delete Category")) {
+        data.categoriesList = data.categoriesList.filter(category => category.id !== categoryId);
+        renderPage();
+    }
 }
 function calcCategoryUse(category, yearMonth) {
     let use = 0;
@@ -178,8 +192,10 @@ function addTransaction() {
 }
 
 function deleteTransaction(transactionId) {
-    data.transactionList = data.transactionList.filter(transaction => transaction.id !== transactionId);
-    renderPage();
+    if (confirm("Delete Transaction")) {
+        data.transactionList = data.transactionList.filter(transaction => transaction.id !== transactionId);
+        renderPage();
+    }
 }
 function calcTransactionByYear(year) {
     const income = [];
@@ -470,6 +486,11 @@ function renderSectionAccount() {
         ul.appendChild(li)
     });
 }
+function sortAccounts() {
+    data.accountList.sort((a, b) => calcAccountBalance(a) - calcAccountBalance(b));
+    renderSectionAccount();
+    saveData();
+}
 
 //#region SectionCategory
 function renderCategory(category, yearMonth) {
@@ -545,7 +566,18 @@ function renderSectionCategories() {
         ul.appendChild(li)
     });
 }
+function sortCategory() {
+    data.categoriesList.sort((a, b) => {
+        const typeCompare = b.type.localeCompare(a.type);
+        if (typeCompare !== 0) {
+            return typeCompare;
+        }
+        return a.value - b.value;
+        });
 
+    renderSectionCategories();
+    saveData();
+}
 //#region SectionTransaction
 function renderTransaction(transaction) {
     const li = document.createElement('li');
@@ -605,6 +637,15 @@ function renderSectionTransactions() {
     });
 
     numberSum.textContent = sum.toLocaleString();
+}
+function showAllTransactions() {
+    const ul = document.getElementById('transactions-list');
+    ul.innerHTML = '';
+
+    data.transactionList.forEach(transaction => {
+        const li = renderTransaction(transaction);
+        ul.appendChild(li);
+    });
 }
 
 //#region ExportImport
@@ -829,11 +870,22 @@ class AccountPieChart {
     this.svg = svgElement;
     this.accounts = accounts; // [{id:1, name:"Bank A", value:1000}, ...]
     this.config = Object.assign({
-      colors: ["#FDB5CE", "#547792", "#E9762B", "#3B9797", "#41644A", "#00bcd4"],
+      colors: [
+        "#cc6666ff", 
+        "#c29149ff", 
+        "#cfc275ff", 
+        "#7eb858ff", 
+        "#6fb5d1ff", 
+        "#766fdbff",
+        "#dd71c6ff",
+        "#b17b8dff",
+        "#ad8f7aff",
+    ],
       radius: 100,
       centerX: 170,
       centerY: 150,
       labelColor: "#333",
+      explodeOffset: 10 // khoảng cách dịch ra ngoài
     }, config);
 
     this.svg.setAttribute("width", this.config.centerX * 2);
@@ -848,76 +900,81 @@ class AccountPieChart {
     return node;
   }
 
-    render() {
+  render() {
     this.svg.innerHTML = "";
 
     const width  = this.svg.clientWidth  || this.svg.getBoundingClientRect().width  || this.config.centerX * 2;
     const height = this.svg.clientHeight || this.svg.getBoundingClientRect().height || this.config.centerY * 2;
 
-    // đặt lại tâm ở giữa
     const cx = width / 2;
     const cy = height / 2;
 
     const total = this.accounts.reduce((sum, acc) => sum + calcAccountBalance(acc), 0);
     if (total <= 0) {
-        const msg = this.el("text", {
+      const msg = this.el("text", {
         x: cx,
         y: cy,
         fill: this.config.labelColor,
         "text-anchor": "middle",
         "alignment-baseline": "middle"
-        });
-        msg.textContent = "No balance data";
-        this.svg.appendChild(msg);
-        return;
+      });
+      msg.textContent = "No balance data";
+      this.svg.appendChild(msg);
+      return;
     }
 
     let startAngle = 0;
     this.accounts.forEach((acc, i) => {
-        const balance = calcAccountBalance(acc);
-        const sliceAngle = (balance / total) * 2 * Math.PI;
-        const endAngle = startAngle + sliceAngle;
+      const balance = calcAccountBalance(acc);
+      const sliceAngle = (balance / total) * 2 * Math.PI;
+      const endAngle = startAngle + sliceAngle;
 
-        const x1 = cx + this.config.radius * Math.cos(startAngle);
-        const y1 = cy + this.config.radius * Math.sin(startAngle);
-        const x2 = cx + this.config.radius * Math.cos(endAngle);
-        const y2 = cy + this.config.radius * Math.sin(endAngle);
+      const midAngle = startAngle + sliceAngle / 2;
 
-        const largeArc = sliceAngle > Math.PI ? 1 : 0;
+      // vector dịch chuyển (explode)
+      const dx = this.config.explodeOffset * Math.cos(midAngle);
+      const dy = this.config.explodeOffset * Math.sin(midAngle);
 
-        const pathData = [
-        `M ${cx} ${cy}`,
+      const x1 = cx + this.config.radius * Math.cos(startAngle) + dx;
+      const y1 = cy + this.config.radius * Math.sin(startAngle) + dy;
+      const x2 = cx + this.config.radius * Math.cos(endAngle) + dx;
+      const y2 = cy + this.config.radius * Math.sin(endAngle) + dy;
+
+      const largeArc = sliceAngle > Math.PI ? 1 : 0;
+
+      const pathData = [
+        `M ${cx + dx} ${cy + dy}`,
         `L ${x1} ${y1}`,
         `A ${this.config.radius} ${this.config.radius} 0 ${largeArc} 1 ${x2} ${y2}`,
         "Z"
-        ].join(" ");
+      ].join(" ");
 
-        const path = this.el("path", {
+      const path = this.el("path", {
         d: pathData,
         fill: this.config.colors[i % this.config.colors.length]
-        });
-        this.svg.appendChild(path);
+      });
+      this.svg.appendChild(path);
 
-        // Label
-        const midAngle = startAngle + sliceAngle / 2;
-        const lx = cx + (this.config.radius + 20) * Math.cos(midAngle);
-        const ly = cy + (this.config.radius + 20) * Math.sin(midAngle);
+      // Label cũng dịch theo
+      const lx = cx + (this.config.radius + 20) * Math.cos(midAngle) + dx;
+      const ly = cy + (this.config.radius + 20) * Math.sin(midAngle) + dy;
 
-        const label = this.el("text", {
+      const label = this.el("text", {
         x: lx,
         y: ly,
         fill: this.config.labelColor,
         "text-anchor": "middle",
         "alignment-baseline": "middle",
         "font-size": "12"
-        });
-        label.textContent = acc.name;
-        this.svg.appendChild(label);
+      });
+      label.textContent = acc.name;
+      this.svg.appendChild(label);
 
-        startAngle = endAngle;
+      startAngle = endAngle;
     });
-    }
+  }
 }
+
 
 //#region SectionChart
 function createChart() {
