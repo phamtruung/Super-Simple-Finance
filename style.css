@@ -19,6 +19,7 @@
     padding: var(--gap);
     font-family: 'Courier New', Courier, monospace;
     font-size: 1rem;
+    font-weight: 600;
 }
 html, body {
     max-width: 1000px;
@@ -29,9 +30,11 @@ html, body {
 h1 {
     font-size: 1.4rem;
     flex: 1;
+    font-weight: 900;
 }
 h2 {
-    flex: 1
+    flex: 1;
+    font-style: bold;
 }
 button {
     min-width: 20px;
@@ -163,4 +166,17 @@ section.active {
     text-align: right;
     border-bottom: 1px dashed var(--fg);
 }
-
+.big-chart {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+}
+.small-chart {
+    display: flex;
+    flex-wrap: wrap;
+}
+.chart-inside {
+    flex: 1;
+    min-width: 320px;
+}

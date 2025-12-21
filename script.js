@@ -864,115 +864,115 @@ class IncomExpenseChart {
     }
 }
 
-//#region AccountPieChart
-class AccountPieChart {
-  constructor(svgElement, accounts, config = {}) {
-    this.svg = svgElement;
-    this.accounts = accounts; // [{id:1, name:"Bank A", value:1000}, ...]
-    this.config = Object.assign({
-      colors: [
-        "#cc6666ff", 
-        "#c29149ff", 
-        "#cfc275ff", 
-        "#7eb858ff", 
-        "#6fb5d1ff", 
-        "#766fdbff",
-        "#dd71c6ff",
-        "#b17b8dff",
-        "#ad8f7aff",
-    ],
-      radius: 100,
-      centerX: 170,
-      centerY: 150,
-      labelColor: "#333",
-      explodeOffset: 10 // khoảng cách dịch ra ngoài
-    }, config);
+//#region PieChart
+class PieChart {
+    constructor(svgElement, objectList, config = {}) {
+        this.svg = svgElement;
+        this.objectList = objectList; // [{id:1, name:"Bank A", value:1000}, ...]
+        this.config = Object.assign({
+        colors: [
+            "#cc6666ff", 
+            "#c29149ff", 
+            "#cfc275ff", 
+            "#7eb858ff", 
+            "#6fb5d1ff", 
+            "#766fdbff",
+            "#dd71c6ff",
+            "#b17b8dff",
+            "#ad8f7aff",
+        ],
+        radius: 100,
+        centerX: 170,
+        centerY: 150,
+        labelColor: "#333",
+        explodeOffset: 10 // khoảng cách dịch ra ngoài
+        }, config);
 
-    this.svg.setAttribute("width", this.config.centerX * 2);
-    this.svg.setAttribute("height", this.config.centerY * 2);
-  }
-
-  el(tag, attrs = {}) {
-    const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
-    for (const [k, v] of Object.entries(attrs)) {
-      node.setAttribute(k, v);
-    }
-    return node;
-  }
-
-  render() {
-    this.svg.innerHTML = "";
-
-    const width  = this.svg.clientWidth  || this.svg.getBoundingClientRect().width  || this.config.centerX * 2;
-    const height = this.svg.clientHeight || this.svg.getBoundingClientRect().height || this.config.centerY * 2;
-
-    const cx = width / 2;
-    const cy = height / 2;
-
-    const total = this.accounts.reduce((sum, acc) => sum + calcAccountBalance(acc), 0);
-    if (total <= 0) {
-      const msg = this.el("text", {
-        x: cx,
-        y: cy,
-        fill: this.config.labelColor,
-        "text-anchor": "middle",
-        "alignment-baseline": "middle"
-      });
-      msg.textContent = "No balance data";
-      this.svg.appendChild(msg);
-      return;
+        this.svg.setAttribute("width", this.config.centerX * 2);
+        this.svg.setAttribute("height", this.config.centerY * 2);
     }
 
-    let startAngle = 0;
-    this.accounts.forEach((acc, i) => {
-      const balance = calcAccountBalance(acc);
-      const sliceAngle = (balance / total) * 2 * Math.PI;
-      const endAngle = startAngle + sliceAngle;
+    el(tag, attrs = {}) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const [k, v] of Object.entries(attrs)) {
+        node.setAttribute(k, v);
+        }
+        return node;
+    }
 
-      const midAngle = startAngle + sliceAngle / 2;
+    render() {
+        this.svg.innerHTML = "";
 
-      // vector dịch chuyển (explode)
-      const dx = this.config.explodeOffset * Math.cos(midAngle);
-      const dy = this.config.explodeOffset * Math.sin(midAngle);
+        const width  = this.svg.clientWidth  || this.svg.getBoundingClientRect().width  || this.config.centerX * 2;
+        const height = this.svg.clientHeight || this.svg.getBoundingClientRect().height || this.config.centerY * 2;
 
-      const x1 = cx + this.config.radius * Math.cos(startAngle) + dx;
-      const y1 = cy + this.config.radius * Math.sin(startAngle) + dy;
-      const x2 = cx + this.config.radius * Math.cos(endAngle) + dx;
-      const y2 = cy + this.config.radius * Math.sin(endAngle) + dy;
+        const cx = width / 2;
+        const cy = height / 2;
 
-      const largeArc = sliceAngle > Math.PI ? 1 : 0;
+        const total = this.objectList.reduce((sum, obj) => sum + obj.value, 0);
+        if (total <= 0) {
+            const msg = this.el("text", {
+                x: cx,
+                y: cy,
+                fill: this.config.labelColor,
+                "text-anchor": "middle",
+                "alignment-baseline": "middle"
+            });
+            msg.textContent = "No balance data";
+            this.svg.appendChild(msg);
+            return;
+        }
 
-      const pathData = [
-        `M ${cx + dx} ${cy + dy}`,
-        `L ${x1} ${y1}`,
-        `A ${this.config.radius} ${this.config.radius} 0 ${largeArc} 1 ${x2} ${y2}`,
-        "Z"
-      ].join(" ");
+        let startAngle = 0;
+        this.objectList.forEach((object, i) => {
+        const value = object.value;
+        const sliceAngle = (value / total) * 2 * Math.PI;
+        const endAngle = startAngle + sliceAngle;
 
-      const path = this.el("path", {
-        d: pathData,
-        fill: this.config.colors[i % this.config.colors.length]
-      });
-      this.svg.appendChild(path);
+        const midAngle = startAngle + sliceAngle / 2;
 
-      // Label cũng dịch theo
-      const lx = cx + (this.config.radius + 20) * Math.cos(midAngle) + dx;
-      const ly = cy + (this.config.radius + 20) * Math.sin(midAngle) + dy;
+        // vector dịch chuyển (explode)
+        const dx = this.config.explodeOffset * Math.cos(midAngle);
+        const dy = this.config.explodeOffset * Math.sin(midAngle);
 
-      const label = this.el("text", {
-        x: lx,
-        y: ly,
-        fill: this.config.labelColor,
-        "text-anchor": "middle",
-        "alignment-baseline": "middle",
-        "font-size": "12"
-      });
-      label.textContent = acc.name;
-      this.svg.appendChild(label);
+        const x1 = cx + this.config.radius * Math.cos(startAngle) + dx;
+        const y1 = cy + this.config.radius * Math.sin(startAngle) + dy;
+        const x2 = cx + this.config.radius * Math.cos(endAngle) + dx;
+        const y2 = cy + this.config.radius * Math.sin(endAngle) + dy;
 
-      startAngle = endAngle;
-    });
-  }
+        const largeArc = sliceAngle > Math.PI ? 1 : 0;
+
+        const pathData = [
+            `M ${cx + dx} ${cy + dy}`,
+            `L ${x1} ${y1}`,
+            `A ${this.config.radius} ${this.config.radius} 0 ${largeArc} 1 ${x2} ${y2}`,
+            "Z"
+        ].join(" ");
+
+        const path = this.el("path", {
+            d: pathData,
+            fill: this.config.colors[i % this.config.colors.length]
+        });
+        this.svg.appendChild(path);
+
+        // Label cũng dịch theo
+        const lx = cx + (this.config.radius + 10) * Math.cos(midAngle) + dx;
+        const ly = cy + (this.config.radius + 10) * Math.sin(midAngle) + dy;
+
+        const label = this.el("text", {
+            x: lx,
+            y: ly,
+            fill: this.config.labelColor,
+            "text-anchor": "middle",
+            "alignment-baseline": "middle",
+            "font-size": "12"
+        });
+        label.textContent = object.name;
+        this.svg.appendChild(label);
+
+        startAngle = endAngle;
+        });
+    }
 }
 
 
@@ -1018,7 +1018,7 @@ function createChart() {
                 spacing:{monthGap:50}
                 };
 
-            const chart = new IncomExpenseChart(document.getElementById('chart'), income, expense, config);
+            const chart = new IncomExpenseChart(document.getElementById('income-expense-chart'), income, expense, config);
             chart.render();
 
             // render lại khi resize
@@ -1028,13 +1028,28 @@ function createChart() {
 
     }
 
-    // render mặc định theo năm hiện tại
+    // Income Expense Chart
     renderChart(viewYear);
 
-    const chart = new AccountPieChart(document.getElementById("pie"), data.accountList);
-    chart.render();
+    // Account Chart
+    const dataAccount = data.accountList.map(acc => {
+        return {
+            name: acc.name,
+            value: calcAccountBalance(acc),
+        }
+    })
+    const accountChart = new PieChart(document.getElementById("account-chart"), dataAccount);
+    accountChart.render();
 
-
+    // Expense Chart
+    const dataExpense = data.categoriesList
+        .filter(cat => cat.type === "Expense")
+        .map(cat => ({
+            name: cat.name,
+            value: calcCategoryUse(cat, getYearMonth(new Date())),
+        }));
+    const expenseChart = new PieChart(document.getElementById("expense-chart"), dataExpense);
+    expenseChart.render();
 
     // khi chọn năm khác thì vẽ lại
     selectYear.addEventListener("change", () => {
