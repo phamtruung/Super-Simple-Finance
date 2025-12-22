@@ -945,7 +945,9 @@ class PieChart {
         centerX: 170,
         centerY: 150,
         labelColor: "#333",
-        explodeOffset: 10 // khoảng cách dịch ra ngoài
+        explodeOffset: 10, // khoảng cách dịch ra ngoài
+        // Màu khi hover (có thể override bằng config truyền vào)
+        hoverColor: "#999"
         }, config);
 
         this.svg.setAttribute("width", this.config.centerX * 2);
@@ -1013,12 +1015,15 @@ class PieChart {
             d: pathData,
             fill: this.config.colors[i % this.config.colors.length]
         });
+        // pointer cursor for interactivity
+        path.setAttribute('style', 'cursor: pointer;');
         this.svg.appendChild(path);
 
         // Label cũng dịch theo
         const lx = cx + (this.config.radius + 10) * Math.cos(midAngle) + dx;
         const ly = cy + (this.config.radius + 10) * Math.sin(midAngle) + dy;
 
+        // Hiện tên luôn, giá trị chỉ hiển thị khi click
         const label = this.el("text", {
             x: lx,
             y: ly,
@@ -1029,6 +1034,25 @@ class PieChart {
         });
         label.textContent = object.name;
         this.svg.appendChild(label);
+
+        const stringValue = ` ${(object.value).toLocaleString()}`;
+        // Toggle giữa 'name' và 'name + value' khi click lên slice
+        path.addEventListener('click', () => {
+            if (label.textContent.includes(stringValue)) {
+                label.textContent = object.name;
+            } else {
+                label.textContent = object.name + stringValue;
+            }
+        });
+
+        // Hover effect: đổi màu khi hover, trả lại màu gốc khi mouseout
+        const originalFill = path.getAttribute('fill') || this.config.colors[i % this.config.colors.length];
+        path.addEventListener('mouseover', () => {
+            path.setAttribute('fill', this.config.hoverColor);
+        });
+        path.addEventListener('mouseout', () => {
+            path.setAttribute('fill', originalFill);
+        });
 
         startAngle = endAngle;
         });
