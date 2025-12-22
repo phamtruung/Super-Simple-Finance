@@ -741,7 +741,6 @@ class IncomExpenseChart {
         return node;
     }
 
-
     getActualWidth() {
         // Ưu tiên boundingClientRect; nếu 0, thử clientWidth
         const w = this.svg.getBoundingClientRect().width || this.svg.clientWidth || 0;
@@ -806,25 +805,86 @@ class IncomExpenseChart {
         const yIncome = this.scaleY(this.income[i], maxVal);
         const yExpense = this.scaleY(this.expense[i], maxVal);
 
-        this.svg.appendChild(this.el('rect',{
+        // Income bar (click to toggle its value label)
+        const incomeRect = this.el('rect',{
             x:xBase,
             y:yIncome,
             width:barWidth,
             height:this.config.sizes.marginTop+innerHeight-yIncome,
             fill:this.config.colors.income,
             rx:this.config.sizes.barRadius,
-            ry:this.config.sizes.barRadius
-        }));
+            ry:this.config.sizes.barRadius,
+            style: 'cursor: pointer;'
+        });
+        this.svg.appendChild(incomeRect);
 
-        this.svg.appendChild(this.el('rect',{
+        // Income value label (hidden until click)
+        const incomeLabelY = Math.max(this.config.sizes.marginTop + 8, yIncome - 6);
+        const incomeLabel = this.el('text',{
+            x: xBase + barWidth/2,
+            y: incomeLabelY,
+            fill: this.config.colors.label,
+            'text-anchor': 'middle',
+            'font-size': '12',
+            visibility: 'hidden'
+        });
+        incomeLabel.textContent = Number(this.income[i]).toLocaleString();
+        this.svg.appendChild(incomeLabel);
+
+        incomeRect.addEventListener('click', () => {
+            const v = incomeLabel.getAttribute('visibility') || 'hidden';
+            incomeLabel.setAttribute('visibility', v === 'visible' ? 'hidden' : 'visible');
+        });
+
+        // hover effect for income
+        const incomeOrigFill = incomeRect.getAttribute('fill') || this.config.colors.income;
+        const hoverColor = (this.config.colors && this.config.colors.hover) ? this.config.colors.hover : 'gray';
+        incomeRect.addEventListener('mouseover', () => {
+            incomeRect.setAttribute('fill', hoverColor);
+        });
+        incomeRect.addEventListener('mouseout', () => {
+            incomeRect.setAttribute('fill', incomeOrigFill);
+        });
+
+        // Expense bar (click to toggle its value label)
+        const expenseRect = this.el('rect',{
             x:xBase + offset,
             y:yExpense,
             width:barWidth,
             height:this.config.sizes.marginTop+innerHeight-yExpense,
             fill:this.config.colors.expense,
             rx:this.config.sizes.barRadius,
-            ry:this.config.sizes.barRadius
-        }));
+            ry:this.config.sizes.barRadius,
+            style: 'cursor: pointer;'
+        });
+        this.svg.appendChild(expenseRect);
+
+        // Expense value label (hidden until click)
+        const expenseLabelY = Math.max(this.config.sizes.marginTop + 8, yExpense - 6);
+        const expenseLabel = this.el('text',{
+            x: xBase + offset + barWidth/2,
+            y: expenseLabelY,
+            fill: this.config.colors.label,
+            'text-anchor': 'middle',
+            'font-size': '12',
+            visibility: 'hidden'
+        });
+        expenseLabel.textContent = Number(this.expense[i]).toLocaleString();
+        this.svg.appendChild(expenseLabel);
+
+        expenseRect.addEventListener('click', () => {
+            const v = expenseLabel.getAttribute('visibility') || 'hidden';
+            expenseLabel.setAttribute('visibility', v === 'visible' ? 'hidden' : 'visible');
+        });
+
+        // hover effect for expense
+        const expenseOrigFill = expenseRect.getAttribute('fill') || this.config.colors.expense;
+        expenseRect.addEventListener('mouseover', () => {
+            expenseRect.setAttribute('fill', hoverColor);
+        });
+        expenseRect.addEventListener('mouseout', () => {
+            expenseRect.setAttribute('fill', expenseOrigFill);
+        });
 
         const label = this.el('text',{
             x:xBase + barWidth/2,
@@ -1005,6 +1065,7 @@ function createChart() {
                     difference:"rgb(37, 37, 37)",
                     label:"rgb(37, 37, 37)",
                     background: "rgb(233, 233, 233)",
+                    hover: "rgb(175, 175, 175)"
                 },
                 sizes:{
                     svgHeight:300,
