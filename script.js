@@ -5,7 +5,6 @@ let data = {
     categoriesList: [],
     transactionList: []
 }
-let viewYear;
 
 //#region Data
 function openDB() {
@@ -72,7 +71,9 @@ function UUID() {
 }
 function getYearMonth(dateTime) {
     const rawTime = new Date(dateTime);
-    return `${rawTime.getFullYear()}-${rawTime.getMonth()+1}`
+    const year = rawTime.getFullYear();
+    const month = String(rawTime.getMonth() + 1).padStart(2, '0'); // thêm số 0
+    return `${year}-${month}`;
 }
 function getWeek(dateTime) {
     const date = new Date(dateTime);
@@ -161,8 +162,9 @@ function calcCategoryUse(category, yearMonth) {
     let use = 0;
     data.transactionList.forEach(transaction => {
         const rawDate = new Date(transaction.datetime);
-        const stringMonth = `${rawDate.getFullYear()}-${rawDate.getMonth()+1}`
+        const stringMonth = getYearMonth(rawDate);
         if (stringMonth === yearMonth) {
+
             if (transaction.toId === category.id) {
                 use += parseFloat(transaction.value);
             }
@@ -494,6 +496,7 @@ function sortAccounts() {
 
 //#region SectionCategory
 function renderCategory(category, yearMonth) {
+    
     const li = document.createElement('li');
     li.id = category.id;
 
@@ -530,9 +533,9 @@ function renderCategory(category, yearMonth) {
 function renderSectionCategories() {
     const yearMonth = document.getElementById('select-month');
     if (!yearMonth.value) {
-        yearMonth.value = getYearMonth(new Date());
+        const nowMonth = getYearMonth(new Date())
+        yearMonth.value = nowMonth;
     }
-    yearMonth.addEventListener('change', () => renderPage());
 
     const numberSumBudget = document.getElementById('categories-sum-budget');
     let sumBudget = 0;
@@ -565,6 +568,8 @@ function renderSectionCategories() {
         const li = renderCategory(category, yearMonth.value);
         ul.appendChild(li)
     });
+
+    yearMonth.addEventListener('change', () => renderPage());
 }
 function sortCategory() {
     data.categoriesList.sort((a, b) => {
@@ -987,74 +992,75 @@ class PieChart {
 
         let startAngle = 0;
         this.objectList.forEach((object, i) => {
-        const value = object.value;
-        const sliceAngle = (value / total) * 2 * Math.PI;
-        const endAngle = startAngle + sliceAngle;
+            const value = object.value;
+            if (object.value === 0) return;
+            const sliceAngle = value === total ? 2 * 3.14 : (value / total) * 2 * Math.PI;
+            const endAngle = startAngle + sliceAngle;
 
-        const midAngle = startAngle + sliceAngle / 2;
+            const midAngle = startAngle + sliceAngle / 2;
 
-        // vector dịch chuyển (explode)
-        const dx = this.config.explodeOffset * Math.cos(midAngle);
-        const dy = this.config.explodeOffset * Math.sin(midAngle);
+            // vector dịch chuyển (explode)
+            const dx = this.config.explodeOffset * Math.cos(midAngle);
+            const dy = this.config.explodeOffset * Math.sin(midAngle);
 
-        const x1 = cx + this.config.radius * Math.cos(startAngle) + dx;
-        const y1 = cy + this.config.radius * Math.sin(startAngle) + dy;
-        const x2 = cx + this.config.radius * Math.cos(endAngle) + dx;
-        const y2 = cy + this.config.radius * Math.sin(endAngle) + dy;
+            const x1 = cx + this.config.radius * Math.cos(startAngle) + dx;
+            const y1 = cy + this.config.radius * Math.sin(startAngle) + dy;
+            const x2 = cx + this.config.radius * Math.cos(endAngle) + dx;
+            const y2 = cy + this.config.radius * Math.sin(endAngle) + dy;
 
-        const largeArc = sliceAngle > Math.PI ? 1 : 0;
+            const largeArc = sliceAngle > Math.PI ? 1 : 0;
 
-        const pathData = [
-            `M ${cx + dx} ${cy + dy}`,
-            `L ${x1} ${y1}`,
-            `A ${this.config.radius} ${this.config.radius} 0 ${largeArc} 1 ${x2} ${y2}`,
-            "Z"
-        ].join(" ");
+            const pathData = [
+                `M ${cx + dx} ${cy + dy}`,
+                `L ${x1} ${y1}`,
+                `A ${this.config.radius} ${this.config.radius} 0 ${largeArc} 1 ${x2} ${y2}`,
+                "Z"
+            ].join(" ");
 
-        const path = this.el("path", {
-            d: pathData,
-            fill: this.config.colors[i % this.config.colors.length]
-        });
-        // pointer cursor for interactivity
-        path.setAttribute('style', 'cursor: pointer;');
-        this.svg.appendChild(path);
+            const path = this.el("path", {
+                d: pathData,
+                fill: this.config.colors[i % this.config.colors.length]
+            });
+            // pointer cursor for interactivity
+            path.setAttribute('style', 'cursor: pointer;');
+            this.svg.appendChild(path);
 
-        // Label cũng dịch theo
-        const lx = cx + (this.config.radius + 10) * Math.cos(midAngle) + dx;
-        const ly = cy + (this.config.radius + 10) * Math.sin(midAngle) + dy;
+            // Label cũng dịch theo
+            const lx = cx + (this.config.radius + 10) * Math.cos(midAngle) + dx;
+            const ly = cy + (this.config.radius + 10) * Math.sin(midAngle) + dy;
 
-        // Hiện tên luôn, giá trị chỉ hiển thị khi click
-        const label = this.el("text", {
-            x: lx,
-            y: ly,
-            fill: this.config.labelColor,
-            "text-anchor": "middle",
-            "alignment-baseline": "middle",
-            "font-size": "12"
-        });
-        label.textContent = object.name;
-        this.svg.appendChild(label);
+            // Hiện tên luôn, giá trị chỉ hiển thị khi click
+            const label = this.el("text", {
+                x: lx,
+                y: ly,
+                fill: this.config.labelColor,
+                "text-anchor": "middle",
+                "alignment-baseline": "middle",
+                "font-size": "12"
+            });
+            label.textContent = object.name;
+            this.svg.appendChild(label);
 
-        const stringValue = ` ${(object.value).toLocaleString()}`;
-        // Toggle giữa 'name' và 'name + value' khi click lên slice
-        path.addEventListener('click', () => {
-            if (label.textContent.includes(stringValue)) {
-                label.textContent = object.name;
-            } else {
-                label.textContent = object.name + stringValue;
-            }
-        });
+            const stringValue = ` ${(object.value).toLocaleString()}`;
+            // Toggle giữa 'name' và 'name + value' khi click lên slice
+            path.addEventListener('click', () => {
+                if (label.textContent.includes(stringValue)) {
+                    label.textContent = object.name;
+                } else {
+                    label.textContent = object.name + stringValue;
+                }
+            });
 
-        // Hover effect: đổi màu khi hover, trả lại màu gốc khi mouseout
-        const originalFill = path.getAttribute('fill') || this.config.colors[i % this.config.colors.length];
-        path.addEventListener('mouseover', () => {
-            path.setAttribute('fill', this.config.hoverColor);
-        });
-        path.addEventListener('mouseout', () => {
-            path.setAttribute('fill', originalFill);
-        });
+            // Hover effect: đổi màu khi hover, trả lại màu gốc khi mouseout
+            const originalFill = path.getAttribute('fill') || this.config.colors[i % this.config.colors.length];
+            path.addEventListener('mouseover', () => {
+                path.setAttribute('fill', this.config.hoverColor);
+            });
+            path.addEventListener('mouseout', () => {
+                path.setAttribute('fill', originalFill);
+            });
 
-        startAngle = endAngle;
+            startAngle = endAngle;
         });
     }
 }
@@ -1068,12 +1074,12 @@ function createChart() {
     const now = new Date();
     const nowYear = now.getFullYear();
     const listYear = [nowYear, nowYear - 1, nowYear - 2];
-
+   
     listYear.forEach(y => {
         const option = document.createElement('option');
         option.value = y;
         option.textContent = y;
-        if (viewYear === y) option.checked = true;
+        if (nowYear === y) option.checked = true;
         selectYear.appendChild(option);
     });
 
@@ -1114,7 +1120,7 @@ function createChart() {
     }
 
     // Income Expense Chart
-    renderChart(viewYear);
+    renderChart(nowYear);
 
     // Account Chart
     const dataAccount = data.accountList.map(acc => {
@@ -1154,7 +1160,6 @@ function renderPage() {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
-    viewYear = 2025
     const loaded = await loadData();
     if (loaded) {
         data = loaded; // gán lại dữ liệu từ IndexedDB
