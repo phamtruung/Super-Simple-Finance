@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PersonalFinance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -68,7 +69,7 @@
                 <p id="special-account-sum-init" class="number">2000000</p>
                 <p id="special-account-sum" class="number">2000000</p>
             </header>
-            <p style="color: grey">#Accounts not for Income, Expense. Only for Transfer and hidden in Chart</p>
+            <p class="note">#Accounts not for Income, Expense. Only for Transfer and hidden in Chart</p>
             <ul id="special-account-list"></ul>
 
         </section>
@@ -94,7 +95,7 @@
                 <h2>Transactions</h2>
                 <p id="transactions-sum" class="number">1000000</p>
             </header>
-            <div>
+            <div class="select-time">
                 <Select id="sort-by-account"></Select>
                 <Select id="sort-by-category"></Select>
                 <button id="all-transactions" onclick="showAllTransactions()">☼</button>
