@@ -850,7 +850,7 @@ class IncomExpenseChart {
         this.svg = svgElement;
         this.income = income;
         this.expense = expense;
-        this.months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        this.months = ["01","02","03","04","05","06","07","08","09","10","11","12"];
         this.config = config;
 
         this.height = config.sizes.svgHeight;
@@ -1234,9 +1234,9 @@ function createChart() {
                     barRadius:4,
                     pointRadius:4,
                     marginTop:20,
-                    marginRight:0,
+                    marginRight:20,
                     marginBottom:80,
-                    marginLeft:0
+                    marginLeft:20
                 },
                 spacing:{monthGap:50}
                 };
