@@ -25,6 +25,7 @@ html, body {
     margin: auto;
     background-color: var(--bg);
     color: var(--fg);
+    padding: 0.3rem;
 }
 h1 {
     font-size: 1.4rem;
@@ -102,7 +103,7 @@ select, input[type="number"] {
     justify-content: center;
     margin-left: 0;
     margin-right: 0;
-    gap: var(--gap);
+    padding-right: var(--gap);
 }
 .div-input {
     display: flex;
@@ -135,8 +136,7 @@ select, input[type="number"] {
     width: var(--width-number);
     text-align: right;
     font-weight: bold;
-    margin: 0;
-    padding: 0;
+    padding-right: var(--gap);
 }
 .fix {
     flex: 1;
@@ -148,7 +148,6 @@ select, input[type="number"] {
     justify-content: space-evenly;
     background-color: var(--fg-second);
     border-radius: var(--radius);
-
 }
 .btn {
     flex: 1;
@@ -166,20 +165,22 @@ section.active {
 .select-time {
     border-radius: 0px;
     display: flex;
+    flex-wrap: wrap;
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
     text-align: right;
     border-bottom: 1px dashed var(--fg);
 }
 .big-chart {
     display: flex;
     flex-direction: column;
-    flex: 1;
     width: 100%;
+    padding: 0;
 }
 .small-chart {
     display: flex;
     flex-wrap: wrap;
+    padding: 0;
 }
 .chart-inside {
     flex: 1;
