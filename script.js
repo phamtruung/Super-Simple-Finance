@@ -140,7 +140,16 @@ function calcAccountBalance(account) {
     });
     return parseFloat(balance);
 }
-
+function addSpecialAccount() {
+    const newAccount = {
+        id: UUID(), 
+        name: 'New Specical Account', 
+        value: 0, 
+        note: 'Special'
+    }
+    data.accountList.push(newAccount);
+    renderPage();
+}
 //#endregion Category
 function addCategory() {
     const newCategory = {
@@ -186,8 +195,7 @@ function addTransaction() {
         value: 0,
         datetime: getDateTime(),
     }
-    console.log(newTransaction);
-    data.transactionList.push(newTransaction);
+    data.transactionList.unshift(newTransaction);
     const week = document.getElementById('select-week');
     week.value = getWeek(new Date());
     renderPage();
@@ -368,6 +376,14 @@ function createSelectFromId(transaction) {
             }
         });
         selectFrom.value = transaction.fromId;
+    } else if (transaction.type === 'Expense') {
+        data.accountList.forEach(account => {
+            if (account.note === 'Special') return;
+            const option = document.createElement('option');
+            option.value = account.id;
+            option.textContent = account.name;
+            selectFrom.appendChild(option)
+        });
     } else {
         data.accountList.forEach(account => {
             const option = document.createElement('option');
@@ -375,7 +391,7 @@ function createSelectFromId(transaction) {
             option.textContent = account.name;
             selectFrom.appendChild(option)
         });
-    } 
+    }
     selectFrom.value = transaction.fromId;
     selectFrom.addEventListener('change', (e) => {
         transaction.fromId = e.target.value;
@@ -402,6 +418,14 @@ function createSelectToId(transaction) {
             }
         });
         selectTo.value = transaction.fromId;
+    } else if (transaction.type === 'Income') {
+        data.accountList.forEach(account => {
+            if (account.note === "Special") return;
+            const option = document.createElement('option');
+            option.value = account.id;
+            option.textContent = account.name;
+            selectTo.appendChild(option)
+        });
     } else {
         data.accountList.forEach(account => {
             const option = document.createElement('option');
@@ -409,7 +433,7 @@ function createSelectToId(transaction) {
             option.textContent = account.name;
             selectTo.appendChild(option)
         });
-    } 
+    }
     selectTo.value = transaction.toId;
     selectTo.addEventListener('change', (e) => {
         transaction.toId = e.target.value;
@@ -437,7 +461,7 @@ function createInputDateTime(transaction) {
 }
 
 //#region SectionAccount
-function renderFood(account, total) {
+function renderAccount(account, total) {
     const li = document.createElement('li');
     li.id = account.id;
 
@@ -469,28 +493,67 @@ function renderFood(account, total) {
     return li;
 }
 
-function renderSectionFoods() {
+function renderSectionAccounts() {
+    // Account Sum Init
     const numberSumInit = document.getElementById('account-sum-init');
     let sumInit = 0;
-    data.accountList.forEach(account => sumInit += account.value);
+    data.accountList.forEach(account => {
+        if (account.note === 'Special') return
+        sumInit += account.value
+    });
     numberSumInit.textContent = sumInit.toLocaleString();
 
+    // Account Sum Balance
     const accountSum = document.getElementById('account-sum')
     let sum = 0;
-    data.accountList.forEach(account => sum += calcAccountBalance(account))
+    data.accountList.forEach(account => {
+        if (account.note === 'Special') return
+        sum += calcAccountBalance(account)
+    });
     accountSum.textContent = sum.toLocaleString();
 
+    // Account List
     const ul = document.getElementById('account-list');
     ul.innerHTML = '';
-
     data.accountList.forEach(account => {
-        const li = renderFood(account, sum);
+        if (account.note === "Special") return;
+        const li = renderAccount(account, sum);
         ul.appendChild(li)
+    });
+
+    // Special Account Sum Init
+    const specialSumInit = document.getElementById('special-account-sum-init');
+    let specialSumInitValue = 0;
+    data.accountList.forEach(account => {
+        if (account.note === 'Special') {
+            specialSumInitValue += account.value
+        }
+    });
+    specialSumInit.textContent = specialSumInitValue.toLocaleString();
+
+    // Account Sum Balance
+    const specicalSumBalance = document.getElementById('special-account-sum')
+    let specicalSumBalanceValue = 0;
+    data.accountList.forEach(account => {
+        if (account.note === 'Special') {
+            specicalSumBalanceValue += calcAccountBalance(account)
+        }
+    });
+    specicalSumBalance.textContent = specicalSumBalanceValue.toLocaleString();
+
+    // Special Account List
+    const specialUl = document.getElementById('special-account-list');
+    specialUl.innerHTML = '';
+    data.accountList.forEach(account => {
+        if (account.note === "Special") {
+            const li = renderAccount(account, specicalSumBalanceValue);
+            specialUl.appendChild(li)
+        }
     });
 }
 function sortAccounts() {
     data.accountList.sort((a, b) => calcAccountBalance(a) - calcAccountBalance(b));
-    renderSectionFoods();
+    renderSectionAccounts();
     saveData();
 }
 
@@ -614,12 +677,12 @@ function renderTransaction(transaction) {
     return li;
 }
 
-function renderSectionTransactions() {
-    const selectWeek = document.getElementById('select-week');
-    if (!selectWeek.value) {
-        selectWeek.value = getWeek(new Date());
-    }
-    selectWeek.addEventListener('change', () => renderPage());
+function renderTransactionList(selectWeek) {
+    const sortByAccount = document.getElementById('sort-by-account');
+    const accountIdSelect = sortByAccount.value;
+
+    const sortByCategory = document.getElementById('sort-by-category');
+    const categoryIdSelect = sortByCategory.value;
 
     const numberSum = document.getElementById('transactions-sum');
     let sum = 0;
@@ -627,9 +690,29 @@ function renderSectionTransactions() {
     const ul = document.getElementById('transactions-list');
     ul.innerHTML = '';
 
-    data.transactionList.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
-    data.transactionList.forEach(transaction => {
-        if (getWeek(transaction.datetime) === selectWeek.value) {
+    const transactionListByAccount = data.transactionList.filter(transaction => {
+        if (accountIdSelect === "id") return transaction;
+        if (transaction.fromId === accountIdSelect || transaction.toId === accountIdSelect) return transaction;
+    });
+
+    const transactionList = transactionListByAccount.filter(transaction => {
+        if (categoryIdSelect === "cat") return transaction;
+        if (transaction.fromId === categoryIdSelect || transaction.toId === categoryIdSelect) return transaction;
+    });
+
+    transactionList.forEach(transaction => {
+        if (selectWeek) {
+            if (getWeek(transaction.datetime) === selectWeek.value) {
+                const li = renderTransaction(transaction);
+                ul.appendChild(li);
+                if (transaction.type === "Income") {
+                    sum += parseFloat(transaction.value);
+                }
+                if (transaction.type === "Expense") {
+                    sum -= parseFloat(transaction.value);
+                }
+            }
+        } else {
             const li = renderTransaction(transaction);
             ul.appendChild(li);
             if (transaction.type === "Income") {
@@ -640,17 +723,62 @@ function renderSectionTransactions() {
             }
         }
     });
-
     numberSum.textContent = sum.toLocaleString();
 }
-function showAllTransactions() {
-    const ul = document.getElementById('transactions-list');
-    ul.innerHTML = '';
 
-    data.transactionList.forEach(transaction => {
-        const li = renderTransaction(transaction);
-        ul.appendChild(li);
+function renderSectionTransactions() {
+    
+    // Sort by account
+    const sortByAccount = document.getElementById('sort-by-account');
+    sortByAccount.innerHTML = '';
+    const optionDefault = document.createElement('option');
+    optionDefault.value = "id";
+    optionDefault.textContent = "-Account-";
+    sortByAccount.appendChild(optionDefault);
+    data.accountList.forEach(account => {
+        const option = document.createElement('option');
+        option.value = account.id;
+        option.textContent = account.name;
+        sortByAccount.appendChild(option);
+    })
+
+    // Sort by category
+    const sortByCategory = document.getElementById('sort-by-category');
+    sortByCategory.innerHTML = ''
+    const optionDefaultCategory = document.createElement('option');
+    optionDefaultCategory.value = 'cat';
+    optionDefaultCategory.textContent = "-Category-";
+    sortByCategory.appendChild(optionDefaultCategory);
+    data.categoriesList.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        sortByCategory.appendChild(option);
+    })
+    
+    const selectWeek = document.getElementById('select-week');
+    if (!selectWeek.value) {
+        selectWeek.value = getWeek(new Date());
+    }
+
+    renderTransactionList(selectWeek);
+
+    // Event
+    sortByAccount.addEventListener('change', (e) => {
+        sortByAccount.value = e.target.value;
+        renderTransactionList(selectWeek);
     });
+    sortByCategory.addEventListener('change', (e) => {
+        sortByCategory.value = e.target.value;
+        renderTransactionList(selectWeek);
+    });
+    selectWeek.addEventListener('change', () => renderTransactionList(selectWeek));
+
+}
+function showAllTransactions() {
+    const selectWeek = document.getElementById('select-week');
+    selectWeek.value = '';
+    renderTransactionList(null);
 }
 
 //#region ExportImport
@@ -1123,7 +1251,7 @@ function createChart() {
     renderChart(nowYear);
 
     // Account Chart
-    const dataAccount = data.accountList.map(acc => {
+    const dataAccount = data.accountList.filter(acc => acc.note !== "Special").map(acc => {
         return {
             name: acc.name,
             value: calcAccountBalance(acc),
@@ -1152,7 +1280,7 @@ function createChart() {
 
 //#region RenderPage
 function renderPage() {
-    renderSectionFoods();
+    renderSectionAccounts();
     renderSectionCategories();
     renderSectionTransactions();
     saveData();

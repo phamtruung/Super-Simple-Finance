@@ -43,7 +43,7 @@
                 </div>
                 <div class="chart-inside">
                     <header class="section-header">
-                    <h2>Expense</h2>
+                    <h2>Expense This Month</h2>
                     </header>
                     <svg id="expense-chart" style="width:100%; height:300px;"></svg>
                 </div>
@@ -60,6 +60,17 @@
                 <p id="account-sum" class="number">2000000</p>
             </header>
             <ul id="account-list"></ul>
+
+            <!-- Specical Accounts -->
+            <header class="section-header">
+                <button id="add-special-account" onclick="addSpecialAccount()" title="Add Special Account">+</button>
+                <h2>Special Accounts</h2>
+                <button id="sort-special-account" onclick="sortSpecialAccounts()">↕</button>
+                <p id="special-account-sum-init" class="number">2000000</p>
+                <p id="special-account-sum" class="number">2000000</p>
+            </header>
+            <ul id="special-account-list"></ul>
+
         </section>
 
         <section id="section-cateories">
@@ -83,8 +94,13 @@
                 <h2>Transactions</h2>
                 <p id="transactions-sum" class="number">1000000</p>
             </header>
-            <div class="select-time">
+            <div>
+                <Select id="sort-by-account"></Select>
+                <Select id="sort-by-category"></Select>
                 <button id="all-transactions" onclick="showAllTransactions()">☼</button>
+
+            </div>
+            <div class="select-time">
                 <input type="week" name="select-week" id="select-week">
             </div>
 
