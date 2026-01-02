@@ -700,7 +700,11 @@ function renderTransactionList(selectWeek) {
         if (transaction.fromId === categoryIdSelect || transaction.toId === categoryIdSelect) return transaction;
     });
 
-    transactionList.forEach(transaction => {
+    const transactionByTime = transactionList.sort((a, b) => {
+        return new Date(b.datetime) - new Date(a.datetime);
+    });    
+    
+    transactionByTime.forEach(transaction => {
         if (selectWeek) {
             if (getWeek(transaction.datetime) === selectWeek.value) {
                 const li = renderTransaction(transaction);
