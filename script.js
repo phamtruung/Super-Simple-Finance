@@ -7,50 +7,26 @@ let data = {
 }
 
 //#region Data
-function openDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open("MyDatabase", 1);
+function saveData() {
+    const appName = "super-simple-finance"
+    const jsonString = JSON.stringify(data, null, 2);
+    localStorage.setItem(appName, jsonString)
+}
+function loadData() {
+    const appName = "super-simple-finance";
+    const raw = localStorage.getItem(appName);
+    if (raw) {
 
-        request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        // Tạo object store nếu chưa có
-        if (!db.objectStoreNames.contains("appData")) {
-            db.createObjectStore("appData");
+        try {
+            data = JSON.parse(raw);
+        } catch {
+            data = {
+                accountList: [],
+                categoriesList: [],
+                transactionList: []
+            }
         }
-        };
-
-        request.onsuccess = (event) => {
-            resolve(event.target.result);
-        };
-
-        request.onerror = (event) => {
-            reject(event.target.error);
-        };
-    });
-}
-async function saveData() {
-    const db = await openDB();
-    
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction("appData", "readwrite");
-        const store = tx.objectStore("appData");
-        store.put(data, "main"); // key = "main"
-        tx.oncomplete = () => resolve(true);
-        tx.onerror = (event) => reject(event.target.error);
-    });
-}
-async function loadData() {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction("appData", "readonly");
-        const store = tx.objectStore("appData");
-        const request = store.get("main");
-
-        request.onsuccess = () => {
-        resolve(request.result || { accountList: [], categoriesList: [], transactionList: [] });
-        };
-        request.onerror = (event) => reject(event.target.error);
-    });
+    }
 }
 function clearData() {
     if (confirm("Clear All Data")) {
